@@ -12,7 +12,7 @@ ESP32 serial protocol (115200 baud, newline-terminated):
 
 `RigdESP32` is a drop-in alternative that talks to act-athon's rigd daemon (HTTP) instead of the
 serial port: one operator button (released = SHOOT in train mode, TURN in test mode), the ESP32 runs
-act-athon's `fire_ctl` MVP firmware (1.0.0: fires on release, train/test images, no arming, no heartbeat). See `docs/hardware.md`.
+act-athon's `fire_ctl` MVP firmware (1.1.0: fires on release, train/test images, no arming, no heartbeat). See `docs/hardware.md`.
 """
 
 import json
@@ -93,23 +93,20 @@ class RigdESP32:
     rigd owns the ESP32's serial port; we talk to it over HTTP. One physical button (GPIO25):
       mode="train"  releasing it fires the blaster (the firmware does it) and we report "SHOOT"
       mode="test"   releasing it never fires; we report "TURN" (the human's turn is done)
-    fire() asks rigd for one pulse and reports "FIRED", or "COOLDOWN" / "NO_HEARTBEAT".
-    heartbeat() and events() renew rigd's lease (harmless; firmware 1.0.0 no longer needs a heartbeat).
+    fire() asks rigd for one pulse and reports "FIRED", "COOLDOWN", or "BLOCKED" (e.g. rigd timeout).
+    heartbeat() is a no-op: fire_ctl 1.1.0 and rigd have no heartbeat or lease.
     """
 
-    LEASE_EVERY_S = 0.25   # rigd's lease lasts 1 s
-    BLOCKED = {"cooldown": "COOLDOWN", "no_hb": "NO_HEARTBEAT"}
+    BLOCKED = {"cooldown": "COOLDOWN"}
 
     def __init__(self, url: str = "http://localhost:8080", mode: str = "train", timeout: float = 0.3):
         if mode not in ("train", "test"):
             raise ValueError("mode must be 'train' or 'test'")
         self.url, self.mode, self.timeout = url.rstrip("/"), mode, timeout
         self._pending: list[str] = []
-        self._last_lease = 0.0
-        # The board stores the button mode in flash: always set it explicitly.
+        # The button mode is runtime-only (a board reboot restores the flashed image's default): set it.
         self._post("/raw", {"cmd": "cfg", "button_fires": mode == "train"})
         self._releases = int(self._get("/fire_button").get("releases", 0))
-        self._lease(force=True)
 
     def _get(self, path: str) -> dict:
         with urllib.request.urlopen(self.url + path, timeout=self.timeout) as r:
@@ -121,25 +118,16 @@ class RigdESP32:
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return json.loads(r.read())
 
-    def _lease(self, force: bool = False) -> None:
-        now = time.monotonic()
-        if force or now - self._last_lease >= self.LEASE_EVERY_S:
-            self._post("/lease")
-            self._last_lease = now
-
     def events(self) -> list[str]:
         """Non-blocking-ish (one local HTTP call): events since the last call."""
-        self._lease()
         releases = int(self._get("/fire_button").get("releases", 0))
         new, self._releases = max(releases - self._releases, 0), releases
         out, self._pending = self._pending, []
         return out + ["SHOOT" if self.mode == "train" else "TURN"] * new
 
-    def heartbeat(self) -> None:
-        self._lease()
+    def heartbeat(self) -> None: ...
 
     def fire(self) -> None:
-        self._lease(force=True)
         r = self._post("/fire", {"ms": 150})
         self._pending.append("FIRED" if r.get("result") == "fired" else self.BLOCKED.get(r.get("reason"), "BLOCKED"))
 

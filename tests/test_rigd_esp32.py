@@ -36,6 +36,14 @@ def test_test_mode_never_fires_and_reports_turn():
     assert esp.events() == ["TURN", "TURN"]
 
 
+def test_no_lease_calls():
+    """act-athon rigd no longer has POST /lease; heartbeat() must not call anything."""
+    esp = StubRigd("train")
+    esp.heartbeat()
+    esp.events()
+    assert [p for p, _ in esp.calls] == ["/raw"]
+
+
 def test_fire_maps_rigd_results():
     esp = StubRigd("test")
     esp.fire()
@@ -43,3 +51,6 @@ def test_fire_maps_rigd_results():
     esp.fire_result = {"result": "blocked", "reason": "cooldown"}
     esp.fire()
     assert esp.events() == ["COOLDOWN"]
+    esp.fire_result = {"result": "timeout"}
+    esp.fire()
+    assert esp.events() == ["BLOCKED"]
