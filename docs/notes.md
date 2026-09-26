@@ -31,6 +31,13 @@ Check hosting yourself (from the repo root):
 
 The test-run code (mock_pipeline.py, mock_short.py, real_sample.py) was removed on 2026-09-26; it's in git history (commit ddaaf44). Its IDs stay in `runs/*_state.json` and its data in `data/`. The real workflow is `scripts/record.py` → `upload.py` → `train.py` (see README).
 
+## Working from several laptops
+
+- Record on the laptop the arm is plugged into. Its calibration lives in `~/.cache/huggingface/lerobot/calibration/`; copy that folder if you switch laptops, or recorded angles won't match.
+- Give each session a distinct name: `--session <yourname>-0926a`.
+- Recordings stay local (`data/` isn't in git) until `upload.py`; after that anyone can train on them.
+- Fine-tunes are org-wide: `train.py status`, `evals NAME`, `watch NAME` work from any laptop.
+
 ## Credentials (kept out of this folder)
 
 | What | Where | Used for |
