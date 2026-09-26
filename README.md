@@ -56,6 +56,12 @@ Use plain pip, not `uv` (uv can't use the registry's keyring login by default).
 ```
 Find ports with `lerobot-find-port`; calibrate both arms first with `lerobot-calibrate` (ids `follower` / `leader`).
 
+Working from several laptops:
+- Record on the laptop the arm is plugged into. Its calibration lives in `~/.cache/huggingface/lerobot/calibration/`; copy that folder if you switch laptops, or recorded angles won't match.
+- Give each session a distinct name: `--session <yourname>-0926a`.
+- Recordings stay local (`data/` isn't in git) until `upload.py`; after that anyone can train on them.
+- Fine-tunes are org-wide: `status`, `evals NAME`, `watch NAME` work from any laptop.
+
 ## Layout
 
 ```

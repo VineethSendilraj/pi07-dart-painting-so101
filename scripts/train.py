@@ -36,11 +36,15 @@ def ensure_profile(ft, contract_id: str) -> str:
     return ft.create_training_profile(s.PROFILE_NAME, contract_id, s.training_profile()).training_profile_id
 
 
-def run_record(name: str) -> dict:
+def run_record(name: str, ft) -> dict:
+    """Local record if this laptop started the run, otherwise look it up by name (org-wide)."""
     path = RUNS / f"{name}.json"
-    if not path.exists():
-        raise SystemExit(f"no record of fine-tune {name!r} in {RUNS}")
-    return json.loads(path.read_text())
+    if path.exists():
+        return json.loads(path.read_text())
+    run = _find(ft.list_finetunes(page_size=100).finetunes, name)
+    if run is None:
+        raise SystemExit(f"no fine-tune named {name!r} in the org (see: train.py status)")
+    return {"name": name, "run_id": run.run_id}
 
 
 def cmd_contract(a, data, ft):
@@ -92,13 +96,13 @@ def cmd_status(a, data, ft):
 
 
 def cmd_evals(a, data, ft):
-    for m in ft.list_finetune_evaluations(run_record(a.name)["run_id"]):
+    for m in ft.list_finetune_evaluations(run_record(a.name, ft)["run_id"]):
         val = f"{m.validation_mae:.3f}" if m.validation_mae is not None else "-"
         print(f"step {m.step:>6}  train_mae={m.train_mae:.3f}  validation_mae={val}")
 
 
 def cmd_watch(a, data, ft):
-    run_id, last = run_record(a.name)["run_id"], None
+    run_id, last = run_record(a.name, ft)["run_id"], None
     while True:
         r = ft.get_finetune(run_id)
         cps = ft.list_checkpoints(run_id).checkpoints
