@@ -9,6 +9,8 @@ Status and plans live in [notes.md](notes.md); model and data concepts in [conce
 - Each arm has its own USB controller board. **The arms aren't connected to each other**: both plug into the laptop, which relays every movement. Place them side by side (USB reach, operator can see the follower), with the leader and operator out of camera view.
 - STS3215 servos report their own angle (0–4095 ticks = 360°) and have a built-in position controller.
 - Setup: `lerobot-find-port` → `lerobot-setup-motors` (if new) → `lerobot-calibrate` both arms → `lerobot-teleoperate` ~10 min → ~5 test recordings.
+- **LeRobot 0.4.x notes** (teammate verified vs 0.4.4 source): SO-101 classes moved to `lerobot.robots.so_follower.SOFollower` / `lerobot.teleoperators.so_leader.SOLeader` (calibration folders `so_follower/`, `so_leader/`). Pin `transformers>=4.57.1,<5` (5.x breaks). Datasets are format v3.0 (openpi's pinned LeRobot only reads v2.x). Packages named `lerobot_teleoperator_*` auto-load as plugins, which is how a custom teleoperator can add a fire-button action to stock `lerobot-record`.
+- **Back up calibration** (`~/.cache/huggingface/lerobot/calibration/`): recalibrating invalidates recorded data.
 - `lerobot-record` controls: → end episode early, ← redo it, Esc stop and save; reset window between episodes; `--display_data=true` live viewer. macOS terminal needs Accessibility permission. Check `--help` for flag names.
 
 ## How teleop works
@@ -58,25 +60,40 @@ Controllers command the hand position (IK solves joints) and usually velocity, n
 - 8 × AA (~12 V) through a 3 A PTC fuse; battery tray on a small 2-pin plug. Two 40-dart drums, ships with a tripod.
 - No public wiring diagram was found.
 
-### The 4 wires (red, black, white, blue): likely but unverified
+### The 4 wires (measured by teammate, yuviji/act-athon `docs/02-hardware/wiring.md`)
 
-- Red/black: probably battery + / −. White/blue: probably the rev strips' leads (or the fire switch).
-- Verify: batteries out, multimeter continuity on each pair while pressing rev, then fire. Then batteries in, **no darts**, measure each switch lead vs black: ~0 V = switch on the ground side of the motor; ~12 V = on the + side.
+All wires meet on a junction board (`36918 PCBAX-003R`) with **no controller**: the trigger switches carry motor current directly.
 
-### Automating the triggers
+| Wire | What it is |
+| --- | --- |
+| **red** | BAT+ (after PTC fuse F1, `JK 300`, ~3 A hold) + the rev blade + fire microswitch pin 3 **NO** |
+| **white** | rev spring leaf: touching red spins the flywheels |
+| **blue** | fire microswitch pin 1 **C** → pusher motor (2–5 Ω to BAT− when pressed) |
+| **black** | fire microswitch pin 2 **NC** = brake (~0 Ω to BAT−): released, C–NC shorts the pusher so it stops |
 
-- Put a switch **in parallel** with each trigger switch; closing it acts like pressing the trigger. Original triggers keep working.
-- **2-channel relay module (recommended):** isolated from the blaster, works whichever side the switch is on, no shared ground. Needs a 3.3 V-triggerable/optocoupler input and contacts rated ≥5 A. The ~10 ms click is fine.
-- **Logic-level N-channel MOSFET:** only if the switch is on the ground side. Needs a shared ground and a flyback diode.
-- ESP32 sequence on FIRE: rev relay on → wait ~400 ms for spin-up (measure it) → fire relay on ~150 ms (≈ one dart; tune) → off. Don't fire before the flywheels are up to speed (weak shots, jams).
-- Power the ESP32 separately (USB) or from 12 V via a buck converter. A **physical arm/disarm switch** in series with the relay contacts: nothing fires unless armed.
+The fire trigger is an **SPDT microswitch with a motor brake**, not a simple on/off switch. To tell C from NC: pack unplugged, switch held pressed or disconnected; NC reads ~0 Ω to battery −, C reads a few Ω (motor winding). Released and wired in, both read ~0 Ω.
+
+### Automating the trigger (correct wiring)
+
+> ⚠️ **Never put a relay in parallel with the fire microswitch.** That joins red (BAT+) to blue (C), and while the switch is released C is tied to NC (BAT−): closing the relay **shorts the battery**. (Our earlier plan had this bug.)
+
+- **Replace the microswitch with the relay's changeover contacts:** blue → relay **COM**, red → relay **NO**, black → relay **NC**. Relay off = pusher braked (like a released trigger); relay on = pusher runs. Swapping blue/black puts BAT+ straight onto BAT−; double-check before powering.
+- Find COM on the relay: relay off, the two screws that beep together are COM–NC; hold the relay on and probe NO against each: the one that beeps is COM.
+- **Rev always on:** join white to red permanently.
+- **Master power switch in the BAT+ line** (≥5 A rocker, e.g. KCD1 10 A; a 2.5 A toggle was too small for flywheel start-up spikes). Off = nothing powered = hardware interlock. A separate arm input to the ESP32 is the software interlock (a DPDT switch can do both).
+- Relay module: bench-test that it **releases at 3.3 V** (active-low 5 V boards may not; use the high-level-trigger jumper and a 10 kΩ pull-down on IN). Power relay VCC from its own 5 V if it has many coils (teammate's 8-channel board draws ~0.6–0.7 A; an MB102 breadboard supply is fine for ≤300 ms pulses).
+- ESP32: keep relay pins off boot-glitch/strapping pins (avoid 0, 1, 3, 5, 6–11, 12, 14, 15; 34–39 are input-only). Set the relay OFF before `pinMode` at boot. Pulse ~150 ms (50–300), cooldown ~500 ms; tune to one dart.
+- ESP32 dev boards with a CP2102 need the Silicon Labs CP210x driver on macOS; appears as `/dev/cu.usbserial-*`. Many USB-C cables are charge-only. If upload hangs: hold BOOT, tap EN.
+- **Heartbeat:** firmware drops to SAFE if the laptop sends nothing for ~500 ms, so a crashed laptop can't leave it live. Teammate's `firmware/fire_ctl/` already implements SAFE → READY → FIRING → COOLDOWN with this.
 
 ### How the trigger fits the model
 
 - One action column `action/blaster/trigger` `[1]`: 0 every step, 1 while firing. It's in contract `so101_blaster_v1`.
 - **Hold the 1 for ~10 steps (~0.3 s)** per shot so the model can learn it (a single 1 in 600 zeros is invisible).
-- The laptop fires on the **0→1 edge** of `trigger > 0.5` with a ~1 s cooldown, so noisy outputs can't machine-gun.
-- Recording needs a **fire button/pedal on the leader handle** read by our own recording loop (stock `lerobot-record` won't capture it).
+- **Fire gate at inference** (teammate's `src/actathon/fire_gate.py`): fire only when trigger > 0.5 for **3 consecutive steps**, the arm is **settled** (max joint change ≤ 0.5°/step), and the shot budget allows it (1 shot per `shoot(cell)`). Fallback "settle" mode fires after the arm is still ~9 steps (≥30 steps in), if the learned trigger is flaky.
+- **Safety filter** on π0.7 output before the servos: clamp each joint move to ≤3° per step (~90°/s) plus joint limits.
+- Recording needs a **fire button/pedal** read by our own recording loop (stock `lerobot-record` won't capture it). **Label intent, not outcome:** the label comes from the button press, even when disarmed, so most episodes can be recorded without firing darts. Count presses (a 30 ms tap between frames isn't lost) and widen each to ≥10 frames.
+- Keep trigger=1 frames well above 1% of all frames. With quantile normalization a rarer action can blow up (teammate saw q01 == q99 → fire=1 normalized to ~2e8). 10 steps per 150–240-step episode ≈ 4–7%: fine.
 - Optional later: separate `rev` and `fire` columns (model can pre-rev while aiming), or an observation `observation/blaster/loaded` if the ESP32 can sense it.
 
 ### Weight: check first

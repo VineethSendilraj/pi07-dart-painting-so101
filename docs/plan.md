@@ -29,9 +29,15 @@ laptop ── powered USB hub
           ├─ 4: front_camera
           └─ 5: leader arm (plug in only for recording)
 ```
-- Blaster: arm toggle switch across the rev strips (rev always on when armed). Relay COM/NO across the fire switch. Check which wires are which with a multimeter first.
-- ESP32 pins: 26 relay, 27 arm switch, 25 fire button (recording), 33 done button, 32 turn LED.
-- Serial: laptop → `F` (fire), `L1`/`L0` (LED). ESP32 → `FIRED`, `DISARMED`, `TURN`.
+Diagram: [img/wiring.svg](img/wiring.svg).
+
+- **Blaster circuit** (measured, see [hardware.md](hardware.md#automating-the-trigger-correct-wiring)):
+  - **Master switch (≥5 A) in series** with battery +. Off = everything dead (hardware kill switch).
+  - White joined to red: flywheels always spin while powered.
+  - **The relay replaces the fire microswitch** (not parallel, not in series): blue → COM, red → NO, black → NC. Relay off = pusher braked; relay click = one dart. ⚠️ Wiring it *across* the microswitch shorts the battery.
+- **Buttons only connect to the ESP32** (pin → GND), never to the blaster circuit. The ESP32 decides whether to click the relay.
+- ESP32 pins: 26 relay IN, 25 SHOOT button, 33 DONE button, 27 ARM switch, 32 turn LED. Relay module powered from its own 5 V if it has many coils.
+- Serial: laptop → `F` (fire), `L1`/`L0` (LED), heartbeat. ESP32 → `SHOOT` (button pressed), `FIRED`, `DISARMED`, `TURN`. Firmware goes SAFE if no heartbeat for ~500 ms. Teammate's `firmware/fire_ctl/` (yuviji/act-athon) already does most of this.
 - Laptop needs internet for π0.7 (hotspot as backup).
 
 ## Model (contract `so101_blaster_v1`)
@@ -42,7 +48,9 @@ laptop ── powered USB hub
 
 ## Recording (`scripts/record.py`)
 
-- Aim with the leader arm, fire with the button (off camera). ESP32 fires and sends `FIRED`; trigger = 1 for ~10 steps.
+- Aim with the leader arm, press SHOOT (off camera). Every press is **logged as a shot** (trigger = 1 for ~10 steps); the relay only clicks **if ARM is on**.
+  - **ARM off (most demos):** recorded as a shot, no dart leaves. No darts to collect.
+  - **ARM on (a few demos):** real shots, so recordings include real darts on the board.
 - Episode: varied start pose → aim → fire → end ~0.5 s later (~5–8 s total).
 - ~12–15 per cell → ~110–135 episodes (~70 min). Upload with `success=True` + full-length `control_source="human"` span.
 - Pilot first: A1, B2, C3 × 10 → short fine-tune → check.
@@ -52,14 +60,18 @@ laptop ── powered USB hub
 ```
 human places O → presses DONE → Claude (claude-opus-5-5) sees board → shoot(cell)
 shoot(cell): π0.7 loop at 30 Hz, "shoot B2"
-   joints → arm ; trigger > 0.5 (edge, armed, cooldown) → 'F'
+   joints → speed limit (≤3° per step) → arm
+   fire rule: trigger > 0.5 for 3 steps in a row + arm stopped + not fired yet this turn → 'F'
    ends on FIRED (or 10 s timeout) → scripted return to rest
 Claude checks the dart landed → LED on: human's turn
 ```
 - One Python process owns all USB devices. Spacebar = backup done button.
+- **Safety rules** (our code, between π0.7 and the hardware): the fire rule stops a one-step flicker or a mid-swing shot from firing, and allows one dart per turn; the speed limit turns a bad model output into slow, correctable motion instead of a lurch.
 
 ## Open
 
 - **Hosting:** no checkpoint has a `gateway_url` yet. PI must enable it for `actathon_Ledger`.
-- Blaster weight at full reach.
+- Blaster weight at full reach (teammate assumed too heavy and planned a tripod + arm-pushes-handle mount).
+- Fallback if hosting never comes: self-hosted π0.5 via LeRobot (`lerobot/pi05_base`) on a GPU box. Needs LeRobot v3 data.
+- Check the 9 cell colors are still distinguishable at the model's ~224 px input size.
 - Cameras on site?
