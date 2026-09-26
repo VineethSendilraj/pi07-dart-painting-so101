@@ -86,12 +86,13 @@ def main() -> None:
     p.add_argument("--front-cam", default="0"), p.add_argument("--wrist-cam", default="1")
     p.add_argument("--fake", action="store_true", help="fake arm, cameras and ESP32")
     p.add_argument("--auto", action="store_true", help="start episodes without waiting for SPACE")
+    p.add_argument("--fake-shot-every", type=float, default=2.5, help="--fake: seconds between fake SHOOT presses")
     a = p.parse_args()
     for cell in a.cells:
         s.task_for(cell)  # validates
 
     if a.fake:
-        rig, esp = FakeRig(), FakeESP32()
+        rig, esp = FakeRig(), FakeESP32(shoot_every=a.fake_shot_every)
     else:
         if not (a.follower_port and a.leader_port and a.esp32_port):
             p.error("--follower-port, --leader-port and --esp32-port are required (or use --fake)")
