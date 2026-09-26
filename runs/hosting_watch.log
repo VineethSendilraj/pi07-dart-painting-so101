@@ -3,3 +3,4 @@
 [04:09:18] mock-so101-short-20steps: run=succeeded checkpoint=ddb565d4 available gateway_url=None
 [04:09:18] mock-so101-smoke-v1: run=succeeded checkpoint=a97d322e available gateway_url=None
 [07:03:23] test-trainpy-v1: run=running checkpoint=0d813f28 pending gateway_url=None
+[07:15:32] test-trainpy-v1: run=succeeded checkpoint=0d813f28 available gateway_url=None

@@ -97,33 +97,26 @@
 <line x1="24" y1="490" x2="956" y2="490" stroke="#D3D1C7"/>
 <text class="h" x="24" y="516">4. Training data: one row per step (30 rows/second) · one episode ≈ 150–240 rows</text>
 <!-- group header -->
-<rect x="94" y="528" width="494" height="22" class="in"/><text class="cb" x="341" y="543">observation: what the robot sees / measures</text>
-<rect x="588" y="528" width="352" height="22" class="out"/><text class="cb" x="764" y="543">action: what the operator commanded</text>
+<rect x="94" y="528" width="480" height="22" class="in"/><text class="cb" x="334" y="543">observation: what the robot sees / measures</text>
+<rect x="574" y="528" width="366" height="22" class="out"/><text class="cb" x="757" y="543">action: what the operator commanded</text>
 <!-- column header -->
 <g class="hd"><rect x="24" y="550" width="70" height="22"/></g>
-<g class="in"><rect x="94" y="550" width="64" height="22"/><rect x="158" y="550" width="64" height="22"/><rect x="222" y="550" width="60" height="22"/><rect x="282" y="550" width="60" height="22"/><rect x="342" y="550" width="60" height="22"/><rect x="402" y="550" width="60" height="22"/><rect x="462" y="550" width="60" height="22"/></g>
-<g class="un"><rect x="522" y="550" width="66" height="22"/></g>
-<g class="out"><rect x="588" y="550" width="50" height="22"/><rect x="638" y="550" width="50" height="22"/><rect x="688" y="550" width="50" height="22"/><rect x="738" y="550" width="50" height="22"/><rect x="788" y="550" width="50" height="22"/></g>
-<g class="un"><rect x="838" y="550" width="46" height="22"/></g>
-<g class="tr"><rect x="884" y="550" width="56" height="22"/></g>
-<g class="cb"><text x="59" y="565">step</text><text x="126" y="565">front</text><text x="190" y="565">wrist</text><text x="252" y="565">j1</text><text x="312" y="565">j2</text><text x="372" y="565">j3</text><text x="432" y="565">j4</text><text x="492" y="565">j5</text><text x="555" y="565">gripper</text>
-<text x="613" y="565">j1</text><text x="663" y="565">j2</text><text x="713" y="565">j3</text><text x="763" y="565">j4</text><text x="813" y="565">j5</text><text x="861" y="565">grip</text><text x="912" y="565">trigger</text></g>
+<g class="in"><rect x="94" y="550" width="80" height="22"/><rect x="174" y="550" width="80" height="22"/><rect x="254" y="550" width="64" height="22"/><rect x="318" y="550" width="64" height="22"/><rect x="382" y="550" width="64" height="22"/><rect x="446" y="550" width="64" height="22"/><rect x="510" y="550" width="64" height="22"/></g>
+<g class="out"><rect x="574" y="550" width="60" height="22"/><rect x="634" y="550" width="60" height="22"/><rect x="694" y="550" width="60" height="22"/><rect x="754" y="550" width="60" height="22"/><rect x="814" y="550" width="60" height="22"/></g>
+<g class="tr"><rect x="874" y="550" width="66" height="22"/></g>
+<g class="cb"><text x="59" y="565">step</text><text x="134" y="565">front</text><text x="214" y="565">wrist</text><text x="286" y="565">j1</text><text x="350" y="565">j2</text><text x="414" y="565">j3</text><text x="478" y="565">j4</text><text x="542" y="565">j5</text><text x="604" y="565">j1</text><text x="664" y="565">j2</text><text x="724" y="565">j3</text><text x="784" y="565">j4</text><text x="844" y="565">j5</text><text x="907" y="565">trigger</text></g>
 <!-- data rows -->
 <g fill="#FFFFFF" stroke="#D3D1C7"><rect x="24" y="572" width="916" height="22"/><rect x="24" y="594" width="916" height="22"/><rect x="24" y="616" width="916" height="22"/></g>
-<rect x="884" y="616" width="56" height="22" fill="#FAECE7" stroke="#D85A30"/>
+<rect x="874" y="616" width="66" height="22" fill="#FAECE7" stroke="#D85A30"/>
 <g class="c">
-<text x="59" y="587">#141</text><text x="126" y="587">🖼</text><text x="190" y="587">🖼</text><text x="252" y="587">12.8</text><text x="312" y="587">-38.9</text><text x="372" y="587">54.6</text><text x="432" y="587">2.8</text><text x="492" y="587">0.2</text><text x="555" y="587" fill="#888780">31.0</text>
-<text x="613" y="587">13.2</text><text x="663" y="587">-38.4</text><text x="713" y="587">54.2</text><text x="763" y="587">2.8</text><text x="813" y="587">0.2</text><text x="861" y="587" fill="#888780">31.0</text><text x="912" y="587">0</text>
-<text x="59" y="609">#142</text><text x="126" y="609">🖼</text><text x="190" y="609">🖼</text><text x="252" y="609">13.1</text><text x="312" y="609">-38.5</text><text x="372" y="609">54.3</text><text x="432" y="609">2.8</text><text x="492" y="609">0.2</text><text x="555" y="609" fill="#888780">31.0</text>
-<text x="613" y="609">13.4</text><text x="663" y="609">-38.0</text><text x="713" y="609">54.0</text><text x="763" y="609">2.7</text><text x="813" y="609">0.2</text><text x="861" y="609" fill="#888780">31.0</text><text x="912" y="609">0</text>
-<text x="59" y="631">#143</text><text x="126" y="631">🖼</text><text x="190" y="631">🖼</text><text x="252" y="631">13.3</text><text x="312" y="631">-38.1</text><text x="372" y="631">54.1</text><text x="432" y="631">2.7</text><text x="492" y="631">0.2</text><text x="555" y="631" fill="#888780">31.0</text>
-<text x="613" y="631">13.4</text><text x="663" y="631">-37.9</text><text x="713" y="631">53.9</text><text x="763" y="631">2.7</text><text x="813" y="631">0.2</text><text x="861" y="631" fill="#888780">31.0</text><text x="912" y="631">1</text>
+<text x="59" y="587">#141</text><text x="134" y="587">🖼</text><text x="214" y="587">🖼</text><text x="286" y="587">12.8</text><text x="350" y="587">-38.9</text><text x="414" y="587">54.6</text><text x="478" y="587">2.8</text><text x="542" y="587">0.2</text><text x="604" y="587">13.2</text><text x="664" y="587">-38.4</text><text x="724" y="587">54.2</text><text x="784" y="587">2.8</text><text x="844" y="587">0.2</text><text x="907" y="587">0</text>
+<text x="59" y="609">#142</text><text x="134" y="609">🖼</text><text x="214" y="609">🖼</text><text x="286" y="609">13.1</text><text x="350" y="609">-38.5</text><text x="414" y="609">54.3</text><text x="478" y="609">2.8</text><text x="542" y="609">0.2</text><text x="604" y="609">13.4</text><text x="664" y="609">-38.0</text><text x="724" y="609">54.0</text><text x="784" y="609">2.7</text><text x="844" y="609">0.2</text><text x="907" y="609">0</text>
+<text x="59" y="631">#143</text><text x="134" y="631">🖼</text><text x="214" y="631">🖼</text><text x="286" y="631">13.3</text><text x="350" y="631">-38.1</text><text x="414" y="631">54.1</text><text x="478" y="631">2.7</text><text x="542" y="631">0.2</text><text x="604" y="631">13.4</text><text x="664" y="631">-37.9</text><text x="724" y="631">53.9</text><text x="784" y="631">2.7</text><text x="844" y="631">0.2</text><text x="907" y="631">1</text>
 </g>
-<text class="s" x="912" y="652" text-anchor="middle">SHOOT pressed</text>
+<text class="s" x="907" y="652" text-anchor="middle">SHOOT pressed</text>
 <!-- legend -->
 <rect x="24" y="672" width="16" height="14" class="in"/><text class="s" x="46" y="684">model input (cameras + 5 joint readings)</text>
 <rect x="290" y="672" width="16" height="14" class="out"/><text class="s" x="312" y="684">model output (5 joint targets)</text>
 <rect x="500" y="672" width="16" height="14" class="tr"/><text class="s" x="522" y="684">model output (trigger)</text>
-<rect x="660" y="672" width="16" height="14" class="un"/><text class="s" x="682" y="684">recorded, not used (blaster taped on)</text>
 <text class="s" x="24" y="706">Limits: ≤32 state numbers and ≤32 action numbers per row, 1–16 cameras. We use 5 in, 6 out. Column order (joints, then trigger) is fixed by the training profile.</text>
 </svg>
