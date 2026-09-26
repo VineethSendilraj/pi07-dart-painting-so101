@@ -23,6 +23,12 @@ Knowledge base:
 - Note: `pi-upload-lerobot` maps each LeRobot feature to exactly one topic and can't split a feature, so the real-sample contract `so101_v1` uses single [6] state/action topics. Our own recorder writes MCAP directly, so the blaster contract keeps separate topics.
 - Real data must use a different `source_dataset_path` (not `mock/v1`) so the fake episodes are never trained on.
 
+Check hosting yourself (from the repo root):
+```bash
+.venv/bin/python -c "from autobot import schema as s; _,ft=s.clients(); [print(r.name, r.state, [(c.state, c.gateway_url) for c in ft.list_checkpoints(r.run_id).checkpoints]) for r in ft.list_finetunes().finetunes]"
+```
+`gateway_url=None` everywhere = nothing hosted. The partner portal (partner.pi-fleet.com) has no fine-tune/checkpoint page; its Models page ("shared model registry") is empty, possibly unrelated.
+
 Mock pipeline commands (each idempotent):
 ```bash
 .venv/bin/python scripts/experiments/mock_pipeline.py contract   # register contract

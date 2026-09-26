@@ -29,7 +29,7 @@ laptop ── powered USB hub
           ├─ 4: front_camera
           └─ 5: leader arm (plug in only for recording)
 ```
-Diagram: [img/wiring.svg](img/wiring.svg).
+![Wiring](img/wiring.svg)
 
 - **Blaster circuit** (measured, see [hardware.md](hardware.md#automating-the-trigger-correct-wiring)):
   - **Master switch (≥5 A) in series** with battery +. Off = everything dead, including the flywheels. It's both the rev switch and the kill switch.
@@ -70,7 +70,7 @@ Claude checks the dart landed → screen shows "your turn"
 
 ## Open
 
-- **Hosting:** no checkpoint has a `gateway_url` yet. PI must enable it for `actathon_Ledger`.
+- **Hosting (blocker):** 4 fine-tunes succeeded, all checkpoints `available`, none has a `gateway_url` (oldest since 01:22 PT). PI must enable remote hosting for `actathon_Ledger`. Check with the API one-liner in [notes.md](notes.md).
 - Blaster weight at full reach (teammate assumed too heavy and planned a tripod + arm-pushes-handle mount).
 - Fallback if hosting never comes: self-hosted π0.5 via LeRobot (`lerobot/pi05_base`) on a GPU box. Needs LeRobot v3 data.
 - Check the 9 cell colors are still distinguishable at the model's ~224 px input size.

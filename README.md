@@ -4,6 +4,13 @@ An SO-101 arm with a blaster plays tic-tac-toe. Claude picks the move; a fine-tu
 
 Start with [docs/plan.md](docs/plan.md).
 
+![Wiring](docs/img/wiring.svg)
+
+## Status
+
+- Pipeline works end to end up to a checkpoint: contract → episodes → training profile → fine-tune (`pi07`). 4 runs succeeded (fake and real SO-101 data).
+- **Blocked on inference:** every checkpoint is `available` but has no `gateway_url`; PI needs to enable remote hosting for org `actathon_Ledger`. Details: [docs/notes.md](docs/notes.md).
+
 ## Layout
 
 ```
