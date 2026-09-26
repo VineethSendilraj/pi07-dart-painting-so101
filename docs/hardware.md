@@ -87,7 +87,7 @@ The fire trigger is an **SPDT microswitch with a motor brake**, not a simple on/
 
 ### Using act-athon's rig (one button, rigd)
 
-The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon](https://github.com/yuviji/act-athon), `docs/02-hardware/wiring.md`) behind its `rigd` HTTP daemon. Pins: relay IN on **GPIO13** (high-level trigger), one operator button on **GPIO25**, arm jumper on **GPIO26** (left plugged in). **Don't flash this repo's `firmware/` sketch onto that rig**: it drives GPIO26 as the relay output, which is the arm jumper to GND there.
+The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon](https://github.com/yuviji/act-athon), `docs/02-hardware/wiring.md`) behind its `rigd` HTTP daemon. Pins: relay IN on **GPIO13** (high-level trigger), one operator button on **GPIO25**, **GPIO26 permanently wired to GND** (always armed; the blaster's rocker switch is the only switch). **Don't flash this repo's `firmware/` sketch onto that rig**: it drives GPIO26 as the relay output, which is wired straight to GND there.
 
 - Start rigd (it owns the ESP32 port): `rigd --port /dev/cu.usbserial-0001` (from act-athon's venv).
 - `record.py --rigd-url http://localhost:8080 …` instead of `--esp32-port`: releasing the button fires (firmware) and is recorded as `SHOOT`.
