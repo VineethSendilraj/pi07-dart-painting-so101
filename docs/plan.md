@@ -48,6 +48,8 @@ laptop ──USB-C── powered USB hub
 
 ## How the VLA works
 
+![How the VLA works](img/vla.svg)
+
 - **30 Hz = 30 steps per second.** Each step is one row of data; one **episode** is one teleop recording (both camera videos + the arm/trigger rows), ~5–8 s ≈ 150–240 rows.
 - **One row (the contract, `so101_blaster_v1`):**
 

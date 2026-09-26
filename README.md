@@ -2,7 +2,7 @@
 
 An SO-101 arm with a blaster plays tic-tac-toe. Claude picks the move; a fine-tuned π0.7 (Physical Intelligence) aims and fires. Built for the act-athon, Sep 25–27, 2026.
 
-Start with [docs/plan.md](docs/plan.md).
+Start with [docs/plan.md](docs/plan.md). Coding agents: read [AGENTS.md](AGENTS.md).
 
 ![Wiring](docs/img/wiring.svg)
 

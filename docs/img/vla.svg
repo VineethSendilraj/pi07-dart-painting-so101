@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="720" viewBox="0 0 980 720" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<title>How π0.7 works in this project</title>
+<style>
+.h{font-size:15px;font-weight:600;fill:#2C2C2A}.l{font-size:13px;font-weight:500;fill:#2C2C2A}.s{font-size:11px;fill:#5F5E5A}
+.c{font-size:11px;fill:#2C2C2A;text-anchor:middle}.cb{font-size:11px;font-weight:600;fill:#2C2C2A;text-anchor:middle}
+.in{fill:#E6F1FB;stroke:#378ADD}.out{fill:#FAEEDA;stroke:#BA7517}.tr{fill:#FAECE7;stroke:#D85A30}.un{fill:#F1EFE8;stroke:#B4B2A9}.hd{fill:#F1EFE8;stroke:#888780}
+</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="980" height="720" fill="#FFFFFF"/>
+
+<!-- ============ INPUTS ============ -->
+<text class="h" x="24" y="40">1. Inputs (every call)</text>
+<!-- front camera thumbnail: 3x3 colored grid -->
+<rect x="24" y="56" width="124" height="92" rx="4" fill="#2C2C2A"/>
+<g stroke="#FFFFFF" stroke-width="1">
+<rect x="46" y="64" width="26" height="24" fill="#E24B4A"/><rect x="72" y="64" width="26" height="24" fill="#EF9F27"/><rect x="98" y="64" width="26" height="24" fill="#FAC775"/>
+<rect x="46" y="88" width="26" height="24" fill="#97C459"/><rect x="72" y="88" width="26" height="24" fill="#378ADD"/><rect x="98" y="88" width="26" height="24" fill="#7F77DD"/>
+<rect x="46" y="112" width="26" height="24" fill="#ED93B1"/><rect x="72" y="112" width="26" height="24" fill="#888780"/><rect x="98" y="112" width="26" height="24" fill="#5DCAA5"/>
+</g>
+<text class="s" x="86" y="164" text-anchor="middle">front_camera (overhead)</text>
+<!-- wrist camera: zoomed on B2 with crosshair -->
+<rect x="162" y="56" width="124" height="92" rx="4" fill="#378ADD"/>
+<rect x="162" y="56" width="30" height="92" fill="#97C459"/><rect x="256" y="56" width="30" height="92" fill="#7F77DD"/>
+<circle cx="224" cy="102" r="16" fill="none" stroke="#FFFFFF" stroke-width="2"/><line x1="224" y1="80" x2="224" y2="124" stroke="#FFFFFF" stroke-width="2"/><line x1="202" y1="102" x2="246" y2="102" stroke="#FFFFFF" stroke-width="2"/>
+<text class="s" x="224" y="164" text-anchor="middle">wrist_camera (barrel)</text>
+
+<text class="l" x="24" y="196">state: joint angles now (5 numbers)</text>
+<g class="in"><rect x="24" y="204" width="52" height="28"/><rect x="76" y="204" width="52" height="28"/><rect x="128" y="204" width="52" height="28"/><rect x="180" y="204" width="52" height="28"/><rect x="232" y="204" width="52" height="28"/></g>
+<text class="c" x="50" y="222">10.2</text><text class="c" x="102" y="222">-42.0</text><text class="c" x="154" y="222">57.1</text><text class="c" x="206" y="222">3.4</text><text class="c" x="258" y="222">0.3</text>
+<text class="s" x="50" y="246" text-anchor="middle">j1</text><text class="s" x="102" y="246" text-anchor="middle">j2</text><text class="s" x="154" y="246" text-anchor="middle">j3</text><text class="s" x="206" y="246" text-anchor="middle">j4</text><text class="s" x="258" y="246" text-anchor="middle">j5</text>
+
+<text class="l" x="24" y="278">text prompt (from Claude's move)</text>
+<rect x="24" y="286" width="170" height="36" rx="18" fill="#EEEDFE" stroke="#7F77DD"/>
+<text class="l" x="109" y="309" text-anchor="middle">"shoot B2"</text>
+
+<!-- arrows inputs -> model -->
+<path d="M290 110 C 318 110, 318 170, 340 170" fill="none" stroke="#888780" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M290 218 L 340 218" fill="none" stroke="#888780" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M198 304 C 318 304, 318 246, 340 246" fill="none" stroke="#888780" stroke-width="1.6" marker-end="url(#a)"/>
+
+<!-- ============ MODEL ============ -->
+<text class="h" x="344" y="40">2. π0.7</text>
+<rect x="344" y="56" width="176" height="276" rx="10" fill="#FAFAF8" stroke="#2C2C2A" stroke-width="1.5"/>
+<rect x="358" y="120" width="148" height="72" rx="6" fill="#EEEDFE" stroke="#7F77DD"/>
+<text class="l" x="432" y="150" text-anchor="middle">vision-language</text><text class="l" x="432" y="166" text-anchor="middle">backbone</text>
+<text class="s" x="432" y="182" text-anchor="middle">reads images + text</text>
+<line x1="432" y1="192" x2="432" y2="212" stroke="#888780" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="358" y="214" width="148" height="100" rx="6" fill="#E1F5EE" stroke="#1D9E75"/>
+<text class="l" x="432" y="240" text-anchor="middle">action expert</text>
+<text class="s" x="432" y="258" text-anchor="middle">flow matching:</text>
+<text class="s" x="432" y="273" text-anchor="middle">random noise → refined</text>
+<text class="s" x="432" y="288" text-anchor="middle">plan in ~5 steps</text>
+<text class="s" x="432" y="84" text-anchor="middle">hosted by PI</text><text class="s" x="432" y="99" text-anchor="middle">(gateway_url)</text>
+<path d="M520 190 L 556 190" fill="none" stroke="#888780" stroke-width="1.6" marker-end="url(#a)"/>
+
+<!-- ============ ACTION CHUNK ============ -->
+<text class="h" x="560" y="40">3. Output: action chunk</text>
+<text class="s" x="560" y="56">rows = future steps (33 ms apart) · columns = what each part should do</text>
+<!-- header -->
+<g class="hd"><rect x="560" y="64" width="60" height="24"/></g>
+<g class="out"><rect x="620" y="64" width="52" height="24"/><rect x="672" y="64" width="52" height="24"/><rect x="724" y="64" width="52" height="24"/><rect x="776" y="64" width="52" height="24"/><rect x="828" y="64" width="52" height="24"/></g>
+<g class="tr"><rect x="880" y="64" width="72" height="24"/></g>
+<text class="cb" x="590" y="80">step</text><text class="cb" x="646" y="80">j1</text><text class="cb" x="698" y="80">j2</text><text class="cb" x="750" y="80">j3</text><text class="cb" x="802" y="80">j4</text><text class="cb" x="854" y="80">j5</text><text class="cb" x="916" y="80">trigger</text>
+<!-- rows -->
+<g fill="#FFFFFF" stroke="#D3D1C7">
+<rect x="560" y="88" width="392" height="22"/><rect x="560" y="110" width="392" height="22"/><rect x="560" y="132" width="392" height="22"/><rect x="560" y="154" width="392" height="22"/><rect x="560" y="176" width="392" height="22"/>
+<rect x="560" y="198" width="392" height="22"/><rect x="560" y="220" width="392" height="22"/><rect x="560" y="242" width="392" height="22"/><rect x="560" y="264" width="392" height="22"/><rect x="560" y="286" width="392" height="22"/>
+</g>
+<rect x="880" y="242" width="72" height="66" fill="#FAECE7" stroke="#D85A30"/>
+<g class="c">
+<text x="590" y="103">t+1</text><text x="646" y="103">10.9</text><text x="698" y="103">-41.2</text><text x="750" y="103">56.4</text><text x="802" y="103">3.2</text><text x="854" y="103">0.3</text><text x="916" y="103">0</text>
+<text x="590" y="125">t+2</text><text x="646" y="125">11.6</text><text x="698" y="125">-40.3</text><text x="750" y="125">55.7</text><text x="802" y="125">3.0</text><text x="854" y="125">0.3</text><text x="916" y="125">0</text>
+<text x="590" y="147">t+3</text><text x="646" y="147">12.2</text><text x="698" y="147">-39.5</text><text x="750" y="147">55.1</text><text x="802" y="147">2.9</text><text x="854" y="147">0.2</text><text x="916" y="147">0</text>
+<text x="590" y="169">t+4</text><text x="646" y="169">12.7</text><text x="698" y="169">-38.8</text><text x="750" y="169">54.6</text><text x="802" y="169">2.8</text><text x="854" y="169">0.2</text><text x="916" y="169">0</text>
+<text x="590" y="191">t+5</text><text x="646" y="191">13.1</text><text x="698" y="191">-38.3</text><text x="750" y="191">54.2</text><text x="802" y="191">2.8</text><text x="854" y="191">0.2</text><text x="916" y="191">0</text>
+<text x="590" y="213">t+6</text><text x="646" y="213">13.3</text><text x="698" y="213">-38.0</text><text x="750" y="213">54.0</text><text x="802" y="213">2.7</text><text x="854" y="213">0.2</text><text x="916" y="213">0</text>
+<text x="590" y="235">t+7</text><text x="646" y="235">13.4</text><text x="698" y="235">-37.9</text><text x="750" y="235">53.9</text><text x="802" y="235">2.7</text><text x="854" y="235">0.2</text><text x="916" y="235">0</text>
+<text x="590" y="257">t+8</text><text x="646" y="257">13.4</text><text x="698" y="257">-37.9</text><text x="750" y="257">53.9</text><text x="802" y="257">2.7</text><text x="854" y="257">0.2</text><text x="916" y="257">0.97</text>
+<text x="590" y="279">t+9</text><text x="646" y="279">13.4</text><text x="698" y="279">-37.9</text><text x="750" y="279">53.9</text><text x="802" y="279">2.7</text><text x="854" y="279">0.2</text><text x="916" y="279">0.99</text>
+<text x="590" y="301">t+10</text><text x="646" y="301">13.4</text><text x="698" y="301">-37.9</text><text x="750" y="301">53.9</text><text x="802" y="301">2.7</text><text x="854" y="301">0.2</text><text x="916" y="301">0.98</text>
+</g>
+<rect x="560" y="308" width="392" height="22" fill="#F1EFE8" stroke="#D3D1C7"/>
+<text class="s" x="756" y="323" text-anchor="middle">t+11 … t+50: planned but not played (ask again with fresh images)</text>
+<text class="s" x="964" y="200" transform="rotate(90 964 200)" text-anchor="middle">played: 10 rows = 0.33 s</text>
+
+<!-- routing -->
+<path d="M750 332 L 750 370" fill="none" stroke="#BA7517" stroke-width="2" marker-end="url(#a)"/>
+<path d="M916 332 L 916 426" fill="none" stroke="#D85A30" stroke-width="2" marker-end="url(#a)"/>
+<rect x="600" y="372" width="300" height="46" rx="6" class="out"/>
+<text class="l" x="750" y="392" text-anchor="middle">joints [5] → speed limit (≤3°/step)</text>
+<text class="s" x="750" y="408" text-anchor="middle">→ follower arm over USB (servo board)</text>
+<rect x="840" y="428" width="124" height="46" rx="6" class="tr"/>
+<text class="l" x="902" y="448" text-anchor="middle">trigger → fire rule</text>
+<text class="s" x="902" y="464" text-anchor="middle">→ 'F' → ESP32 relay</text>
+
+<!-- ============ TRAINING ROW ============ -->
+<line x1="24" y1="490" x2="956" y2="490" stroke="#D3D1C7"/>
+<text class="h" x="24" y="516">4. Training data: one row per step (30 rows/second) · one episode ≈ 150–240 rows</text>
+<!-- group header -->
+<rect x="94" y="528" width="494" height="22" class="in"/><text class="cb" x="341" y="543">observation: what the robot sees / measures</text>
+<rect x="588" y="528" width="352" height="22" class="out"/><text class="cb" x="764" y="543">action: what the operator commanded</text>
+<!-- column header -->
+<g class="hd"><rect x="24" y="550" width="70" height="22"/></g>
+<g class="in"><rect x="94" y="550" width="64" height="22"/><rect x="158" y="550" width="64" height="22"/><rect x="222" y="550" width="60" height="22"/><rect x="282" y="550" width="60" height="22"/><rect x="342" y="550" width="60" height="22"/><rect x="402" y="550" width="60" height="22"/><rect x="462" y="550" width="60" height="22"/></g>
+<g class="un"><rect x="522" y="550" width="66" height="22"/></g>
+<g class="out"><rect x="588" y="550" width="50" height="22"/><rect x="638" y="550" width="50" height="22"/><rect x="688" y="550" width="50" height="22"/><rect x="738" y="550" width="50" height="22"/><rect x="788" y="550" width="50" height="22"/></g>
+<g class="un"><rect x="838" y="550" width="46" height="22"/></g>
+<g class="tr"><rect x="884" y="550" width="56" height="22"/></g>
+<g class="cb"><text x="59" y="565">step</text><text x="126" y="565">front</text><text x="190" y="565">wrist</text><text x="252" y="565">j1</text><text x="312" y="565">j2</text><text x="372" y="565">j3</text><text x="432" y="565">j4</text><text x="492" y="565">j5</text><text x="555" y="565">gripper</text>
+<text x="613" y="565">j1</text><text x="663" y="565">j2</text><text x="713" y="565">j3</text><text x="763" y="565">j4</text><text x="813" y="565">j5</text><text x="861" y="565">grip</text><text x="912" y="565">trigger</text></g>
+<!-- data rows -->
+<g fill="#FFFFFF" stroke="#D3D1C7"><rect x="24" y="572" width="916" height="22"/><rect x="24" y="594" width="916" height="22"/><rect x="24" y="616" width="916" height="22"/></g>
+<rect x="884" y="616" width="56" height="22" fill="#FAECE7" stroke="#D85A30"/>
+<g class="c">
+<text x="59" y="587">#141</text><text x="126" y="587">🖼</text><text x="190" y="587">🖼</text><text x="252" y="587">12.8</text><text x="312" y="587">-38.9</text><text x="372" y="587">54.6</text><text x="432" y="587">2.8</text><text x="492" y="587">0.2</text><text x="555" y="587" fill="#888780">31.0</text>
+<text x="613" y="587">13.2</text><text x="663" y="587">-38.4</text><text x="713" y="587">54.2</text><text x="763" y="587">2.8</text><text x="813" y="587">0.2</text><text x="861" y="587" fill="#888780">31.0</text><text x="912" y="587">0</text>
+<text x="59" y="609">#142</text><text x="126" y="609">🖼</text><text x="190" y="609">🖼</text><text x="252" y="609">13.1</text><text x="312" y="609">-38.5</text><text x="372" y="609">54.3</text><text x="432" y="609">2.8</text><text x="492" y="609">0.2</text><text x="555" y="609" fill="#888780">31.0</text>
+<text x="613" y="609">13.4</text><text x="663" y="609">-38.0</text><text x="713" y="609">54.0</text><text x="763" y="609">2.7</text><text x="813" y="609">0.2</text><text x="861" y="609" fill="#888780">31.0</text><text x="912" y="609">0</text>
+<text x="59" y="631">#143</text><text x="126" y="631">🖼</text><text x="190" y="631">🖼</text><text x="252" y="631">13.3</text><text x="312" y="631">-38.1</text><text x="372" y="631">54.1</text><text x="432" y="631">2.7</text><text x="492" y="631">0.2</text><text x="555" y="631" fill="#888780">31.0</text>
+<text x="613" y="631">13.4</text><text x="663" y="631">-37.9</text><text x="713" y="631">53.9</text><text x="763" y="631">2.7</text><text x="813" y="631">0.2</text><text x="861" y="631" fill="#888780">31.0</text><text x="912" y="631">1</text>
+</g>
+<text class="s" x="912" y="652" text-anchor="middle">SHOOT pressed</text>
+<!-- legend -->
+<rect x="24" y="672" width="16" height="14" class="in"/><text class="s" x="46" y="684">model input (cameras + 5 joint readings)</text>
+<rect x="290" y="672" width="16" height="14" class="out"/><text class="s" x="312" y="684">model output (5 joint targets)</text>
+<rect x="500" y="672" width="16" height="14" class="tr"/><text class="s" x="522" y="684">model output (trigger)</text>
+<rect x="660" y="672" width="16" height="14" class="un"/><text class="s" x="682" y="684">recorded, not used (blaster taped on)</text>
+<text class="s" x="24" y="706">Limits: ≤32 state numbers and ≤32 action numbers per row, 1–16 cameras. We use 5 in, 6 out. Column order (joints, then trigger) is fixed by the training profile.</text>
+</svg>
