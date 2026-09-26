@@ -113,7 +113,7 @@ def cmd_game(a, rig, esp, policy, rest):
                 if k == " " or "TURN" in esp.events() or a.fake:
                     break
                 time.sleep(0.02)
-            images, _, _ = rig.observe()
+            images, _ = rig.observe()
             cell, note = brain.pick(images["front_camera"], shots)
             if cell is None:
                 print(f"game over: {note}")
@@ -143,7 +143,7 @@ def main() -> None:
         p.error("need --follower-port, --esp32-port and --finetune/--gateway-url (or --fake)")
 
     rig, esp, policy = connect(a)
-    _, rest, _ = rig.observe()  # the starting pose is the rest pose
+    _, rest = rig.observe()  # the starting pose is the rest pose
     try:
         (cmd_shoot if a.cmd == "shoot" else cmd_game)(a, rig, esp, policy, rest)
     finally:

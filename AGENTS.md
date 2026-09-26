@@ -24,10 +24,10 @@ Docs: `docs/plan.md` (the plan, start here) · `docs/notes.md` (status, IDs, ope
 - Board: 3×3 styrofoam grid, ~20 cm cells, columns **A B C**, rows **1 2 3**, each cell its own color. Robot's move = suction dart stuck in the cell; human's move = an O marker.
 - Cameras: `wrist_camera` on the blaster parallel to the barrel; `front_camera` overhead top-right (never move it after recording starts). 640×480, 30 fps.
 - Prompt per episode/inference: `"shoot A1"` … `"shoot C3"`. One model covers all 9 cells; no subtasks.
-- **One row per step at 30 Hz** (contract `so101_blaster_v1`, ID `01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8`):
-  - observation: both camera frames, follower joints [5], follower gripper [1]
-  - action: leader joints [5], leader gripper [1], trigger [1]
-- **Training profile** `so101-blaster-joints-trigger-v1`: state = joints [5]; actions = joints [5] + trigger [1] (gripper is recorded but not trained; the blaster is taped on). Order is fixed.
+- **One row per step at 30 Hz** (contract `so101_blaster_v2`, ID `01a0de1a-01ee-75e2-bdc1-99d2b695b9c7`; no gripper, the blaster sits on a stand):
+  - observation: both camera frames, follower joints [5]
+  - action: leader joints [5], trigger [1]
+- **Training profile** `so101-blaster-v2`: state = joints [5]; actions = joints [5] + trigger [1]. Order is fixed. (`so101_blaster_v1`, which had gripper topics, is deprecated; its test episodes and runs stay in the org.)
 - **Trigger label:** 0 on every step, 1 for ~10 steps after each SHOOT press (intent, even when the blaster is unpowered). Keep trigger=1 frames well above 1% of all frames.
 - Episodes: ~5–8 s (aim → shoot → end 0.7 s later), ~12–15 per cell (~110–135 total). Pilot first: A1, B2, C3 × 10.
 - Limits: ≤32 state numbers, ≤32 action numbers, 1–16 cameras per row.

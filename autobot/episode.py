@@ -27,9 +27,7 @@ class Step:
     time_ns: int  # wall-clock UTC nanoseconds
     images: dict[str, np.ndarray]  # camera name -> uint8 RGB (H, W, 3)
     joints: np.ndarray  # follower joints [5], degrees
-    gripper: float  # follower gripper reading
     act_joints: np.ndarray  # commanded joints [5] (leader position during teleop)
-    act_gripper: float
     trigger: float  # 0 or 1
 
 
@@ -82,9 +80,7 @@ def write_episode(episode_dir: Path, steps: list[Step], *, episode_id: str, cell
             fields.append(v1.FieldRef(topic=topic, sequence_id=seq, capture_time_ns=step.time_ns))
         arrays = {
             s.OBS_JOINTS: step.joints,
-            s.OBS_GRIPPER: [step.gripper],
             s.ACT_JOINTS: step.act_joints,
-            s.ACT_GRIPPER: [step.act_gripper],
             s.ACT_TRIGGER: [step.trigger],
         }
         for topic, value in arrays.items():

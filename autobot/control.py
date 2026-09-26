@@ -63,7 +63,7 @@ def shoot(rig, esp, policy, cell: str, chunk: int = 10, log=print) -> ShotResult
     rule, queue = FireRule(), deque()
     period, t0 = 1 / s.FPS, time.perf_counter()
     next_tick, steps, fired_at = t0, 0, None
-    images, joints, gripper = rig.observe()
+    images, joints = rig.observe()
     cmd = joints.copy()
     esp.events()  # drop stale button presses
     while True:
@@ -74,8 +74,8 @@ def shoot(rig, esp, policy, cell: str, chunk: int = 10, log=print) -> ShotResult
             next_tick = time.perf_counter()
         target, trigger = queue.popleft()
         cmd = speed_limit(target, cmd)
-        rig.command(cmd, gripper)
-        images, joints, gripper = rig.observe()
+        rig.command(cmd)
+        images, joints = rig.observe()
         steps += 1
         if fired_at is None and rule.update(float(trigger), joints):
             esp.fire()
@@ -96,10 +96,10 @@ def shoot(rig, esp, policy, cell: str, chunk: int = 10, log=print) -> ShotResult
 def move_to(rig, esp, pose: np.ndarray, max_seconds: float = 4.0) -> None:
     """Scripted, speed-limited move (e.g. back to the rest pose between turns)."""
     period, next_tick, t0 = 1 / s.FPS, time.perf_counter(), time.perf_counter()
-    _, joints, gripper = rig.observe()
+    _, joints = rig.observe()
     cmd = joints.copy()
     while float(np.abs(pose - cmd).max()) > 0.2 and time.perf_counter() - t0 < max_seconds:
         esp.heartbeat()
         cmd = speed_limit(pose, cmd)
-        rig.command(cmd, gripper)
+        rig.command(cmd)
         next_tick = _tick(period, next_tick)

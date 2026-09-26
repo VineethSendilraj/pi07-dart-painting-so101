@@ -17,9 +17,6 @@ import numpy as np
 
 from autobot import schema as s
 
-MOTORS = (*s.JOINT_NAMES, "gripper")
-
-
 class Rig:
     """Follower arm + cameras, and optionally the leader arm (recording/DAgger only)."""
 
@@ -46,21 +43,19 @@ class Rig:
             self.leader.disconnect()
         self.follower.disconnect()
 
-    def observe(self) -> tuple[dict[str, np.ndarray], np.ndarray, float]:
-        """Camera images, follower joints [5] (degrees), gripper."""
+    def observe(self) -> tuple[dict[str, np.ndarray], np.ndarray]:
+        """Camera images and follower joints [5] (degrees). The gripper servo is ignored."""
         obs = self.follower.get_observation()
         images = {cam: obs[cam] for cam in s.CAMERAS}
-        joints = np.array([obs[f"{m}.pos"] for m in s.JOINT_NAMES], dtype=np.float32)
-        return images, joints, float(obs["gripper.pos"])
+        return images, np.array([obs[f"{m}.pos"] for m in s.JOINT_NAMES], dtype=np.float32)
 
-    def leader_action(self) -> tuple[np.ndarray, float]:
+    def leader_action(self) -> np.ndarray:
         act = self.leader.get_action()
-        return np.array([act[f"{m}.pos"] for m in s.JOINT_NAMES], dtype=np.float32), float(act["gripper.pos"])
+        return np.array([act[f"{m}.pos"] for m in s.JOINT_NAMES], dtype=np.float32)
 
-    def command(self, joints: np.ndarray, gripper: float) -> None:
-        action = {f"{m}.pos": float(v) for m, v in zip(s.JOINT_NAMES, joints)}
-        action["gripper.pos"] = float(gripper)
-        self.follower.send_action(action)
+    def command(self, joints: np.ndarray) -> None:
+        """Joint targets only; the gripper servo isn't commanded."""
+        self.follower.send_action({f"{m}.pos": float(v) for m, v in zip(s.JOINT_NAMES, joints)})
 
 
 class ESP32:
@@ -111,14 +106,13 @@ class FakeRig:
 
     def observe(self):
         images = {cam: self._image(cam) for cam in s.CAMERAS}
-        return images, self.cmd.copy(), 0.0
+        return images, self.cmd.copy()
 
     def leader_action(self):
         t = time.time() - self.t0
-        joints = np.array([25 * np.sin(0.4 * t + i) for i in range(len(s.JOINT_NAMES))], dtype=np.float32)
-        return joints, 0.0
+        return np.array([25 * np.sin(0.4 * t + i) for i in range(len(s.JOINT_NAMES))], dtype=np.float32)
 
-    def command(self, joints, gripper) -> None:
+    def command(self, joints) -> None:
         self.cmd = np.asarray(joints, dtype=np.float32)
 
 

@@ -40,9 +40,9 @@ laptop ──USB-C── powered USB hub
 - Serial: laptop → `F` (fire), heartbeat. ESP32 → `SHOOT` (button pressed), `FIRED`, `TURN` (DONE pressed). Firmware stops firing if no heartbeat for ~500 ms. Teammate's `firmware/fire_ctl/` (yuviji/act-athon) is a good base.
 - Laptop needs internet for π0.7 (hotspot as backup).
 
-## Model (contract `so101_blaster_v1`)
+## Model (contract `so101_blaster_v2`)
 
-- **No gripper:** the blaster is taped to the arm permanently. The contract still has gripper topics (record it, or a constant); the **training profile leaves it out**: state = joints [5], actions = joints [5] + trigger [1]. No new contract needed.
+- **No gripper:** the blaster sits on a stand; the gripper servo is neither recorded nor commanded. Contract and training profile (`so101-blaster-v2`) are the same: state = joints [5], actions = joints [5] + trigger [1]. (v1 had gripper topics and is deprecated.)
 - In: joints [5] + both cameras. Out per step: joints → arm, trigger → ESP32.
 - Task string: `"shoot A1"` … `"shoot C3"`. One model, no subtasks.
 
@@ -51,16 +51,14 @@ laptop ──USB-C── powered USB hub
 ![How the VLA works](img/vla.svg)
 
 - **30 Hz = 30 steps per second.** Each step is one row of data; one **episode** is one teleop recording (both camera videos + the arm/trigger rows), ~5–8 s ≈ 150–240 rows.
-- **One row (the contract, `so101_blaster_v1`):**
+- **One row (the contract, `so101_blaster_v2`):**
 
   | Column | Size | Role | Used by the model? |
   | --- | --- | --- | --- |
   | `system/step` (timestamp) | — | row header, links everything in the row | — |
   | `front_camera`, `wrist_camera` frames | 2 images | observation | yes (input) |
   | follower joints (measured) | 5 | observation | yes (state input) |
-  | follower gripper (measured) | 1 | observation | no (blaster taped on) |
   | leader joints (commanded) | 5 | action | yes (output) |
-  | leader gripper (commanded) | 1 | action | no |
   | trigger (SHOOT button, 0/1) | 1 | action | yes (output) |
 
   There's no "observed gun" column: the blaster has no sensor, so the trigger is action-only.

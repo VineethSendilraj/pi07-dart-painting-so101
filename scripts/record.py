@@ -28,11 +28,11 @@ MAX_EPISODE_S = 15.0
 
 
 def teleop_tick(rig) -> tuple:
-    """Leader → follower, then read the follower. Returns (action_joints, action_gripper, images, joints, gripper)."""
-    act_joints, act_gripper = rig.leader_action()
-    rig.command(act_joints, act_gripper)
-    images, joints, gripper = rig.observe()
-    return act_joints, act_gripper, images, joints, gripper
+    """Leader → follower, then read the follower. Returns (action_joints, images, joints)."""
+    act_joints = rig.leader_action()
+    rig.command(act_joints)
+    images, joints = rig.observe()
+    return act_joints, images, joints
 
 
 def record_episode(rig, esp, key) -> tuple[list[Step] | None, str]:
@@ -47,12 +47,12 @@ def record_episode(rig, esp, key) -> tuple[list[Step] | None, str]:
             return None, "discarded"
         if k == "e":
             return (steps, "ended") if shot_step is not None else (None, "no shot yet, discarded")
-        act_joints, act_gripper, images, joints, gripper = teleop_tick(rig)
+        act_joints, images, joints = teleop_tick(rig)
         for ev in esp.events():
             if ev.startswith("SHOOT"):
                 hold = TRIGGER_HOLD_STEPS
                 shot_step = shot_step if shot_step is not None else len(steps)
-        steps.append(Step(time.time_ns(), images, joints, gripper, act_joints, act_gripper, 1.0 if hold > 0 else 0.0))
+        steps.append(Step(time.time_ns(), images, joints, act_joints, 1.0 if hold > 0 else 0.0))
         hold = max(hold - 1, 0)
         if shot_step is not None and len(steps) - shot_step >= AFTER_SHOT_S * s.FPS:
             return steps, "shot"

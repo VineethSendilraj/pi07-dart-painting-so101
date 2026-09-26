@@ -13,7 +13,7 @@ Knowledge base:
 - **2026-09-25:** `pi-sdk` 0.3.2 installed in `.venv` from PI's private registry. Org API key works (`scripts/smoke_test.py`); the org started empty.
 - **There's no hosted base model to call directly.** Inference only goes through a fine-tuned checkpoint's `gateway_url`.
 - **2026-09-26 mock pipeline** (`scripts/experiments/mock_pipeline.py`, schema in `autobot/schema.py`, IDs in `runs/mock_state.json`):
-  - Contract `so101_blaster_v1` registered: `01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8`. This is the real schema (front + wrist cameras, 5 joints + gripper, blaster trigger, 30 Hz), so real data reuses it.
+  - **Current contract `so101_blaster_v2`: `01a0de1a-01ee-75e2-bdc1-99d2b695b9c7`** (5 joints + trigger, no gripper), profile `so101-blaster-v2`. The test runs below used the now-deprecated v1 `01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8`, which was (front + wrist cameras, 5 joints + gripper, blaster trigger, 30 Hz), so real data reuses it.
   - 3 fake 60 s episodes (5,400 steps) uploaded and finalized in ~40 s.
   - Profile `mock-so101-blaster-profile-v1`, filter `mock-so101-smoke-v1`, fine-tune `mock-so101-smoke-v1` (run `28e28048-8cbb-4232-90de-b564ac2bfeea`, `pi07`, 100 steps). `pi07` is enabled for our org.
   - Timeline (PDT, from API timestamps): created 00:57:27 → started 00:58:00 (33 s queue) → ~18 min data prep (`progress=None`) → training 01:16–01:18 → succeeded + checkpoint `available` 01:22:36. **~25 min total for 100 steps.** Final train MAE 13.06 (raw units; one eval point at step 99, no validation split).
@@ -71,10 +71,10 @@ Submissions close **Sunday 9:00 am**. Demos are live on the real machine. Fine-t
 
 **Task direction:** "aim at the target and fire". The model sees where the target is and points at it (a learnable imitation task). Optional hybrid: Claude marks spots on a canvas, π0.7 aims and fires at each. See [hardware.md](hardware.md#blaster-x-shot-insanity-motorized-dartstorm) for the blaster mod and the weight concern.
 
-**Schema (`autobot/schema.py`, contract `so101_blaster_v1`, 30 Hz):**
-- Observations: `observation/arm/joints/position` [5], `observation/arm/gripper/position` [1], `observation/front_camera/rgb/image`, `observation/wrist_camera/rgb/image`
-- Actions: `action/arm/joints/position` [5], `action/arm/gripper/position` [1], `action/blaster/trigger` [1]
-- Profile: base = front camera, wrist = wrist camera, state = joints + gripper (6), actions = joints + gripper + trigger (7), `absolute`.
+**Schema (`autobot/schema.py`, contract `so101_blaster_v2`, 30 Hz):**
+- Observations: `observation/arm/joints/position` [5], `observation/front_camera/rgb/image`, `observation/wrist_camera/rgb/image`
+- Actions: `action/arm/joints/position` [5], `action/blaster/trigger` [1]
+- Profile `so101-blaster-v2`: base = front camera, wrist = wrist camera, state = joints (5), actions = joints + trigger (6), `absolute`.
 
 **Pipeline:**
 1. Build and calibrate the arms; mount the cameras; mod the blaster (relays + ESP32 + arm/disarm switch); fire button on the leader handle.

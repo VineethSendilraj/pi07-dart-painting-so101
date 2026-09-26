@@ -12,8 +12,8 @@ from pi_sdk.data import McapContract, NdArrayContract, TopicContract
 from pi_sdk.finetuning import ArraySlice, TrainingProfileConfig
 
 FPS = 30
-CONTRACT_NAME = "so101_blaster_v1"  # registered 2026-09-26: 01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8
-PROFILE_NAME = "so101-blaster-joints-trigger-v1"
+CONTRACT_NAME = "so101_blaster_v2"  # v1 (with gripper) is deprecated
+PROFILE_NAME = "so101-blaster-v2"
 DATASET_PATH = "so101-blaster/v1"  # source_dataset_path for real recordings
 
 JOINT_NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
@@ -22,25 +22,20 @@ CELLS = tuple(f"{col}{row}" for row in "123" for col in "ABC")  # A1 B1 C1 A2 ..
 
 CAMERA_TOPICS = {cam: f"observation/{cam}/rgb/image" for cam in CAMERAS}
 OBS_JOINTS = "observation/arm/joints/position"
-OBS_GRIPPER = "observation/arm/gripper/position"
 ACT_JOINTS = "action/arm/joints/position"
-ACT_GRIPPER = "action/arm/gripper/position"
 ACT_TRIGGER = "action/blaster/trigger"
 
 ARRAY_SHAPES = {
     OBS_JOINTS: (len(JOINT_NAMES),),
-    OBS_GRIPPER: (1,),
     ACT_JOINTS: (len(JOINT_NAMES),),
-    ACT_GRIPPER: (1,),
     ACT_TRIGGER: (1,),
 }
-# Everything recorded (the contract). The gripper servo is still read and recorded even
-# though the blaster is taped on; the training profile leaves it out.
-STATE_TOPICS = (OBS_JOINTS, OBS_GRIPPER)
-ACTION_TOPICS = (ACT_JOINTS, ACT_GRIPPER, ACT_TRIGGER)
-# What the model sees and predicts (the training profile), in order.
-MODEL_STATE_TOPICS = (OBS_JOINTS,)
-MODEL_ACTION_TOPICS = (ACT_JOINTS, ACT_TRIGGER)
+# Everything recorded (the contract). No gripper: the blaster sits on a stand.
+STATE_TOPICS = (OBS_JOINTS,)
+ACTION_TOPICS = (ACT_JOINTS, ACT_TRIGGER)
+# What the model sees and predicts (the training profile), in order. Same as recorded.
+MODEL_STATE_TOPICS = STATE_TOPICS
+MODEL_ACTION_TOPICS = ACTION_TOPICS
 
 
 def task_for(cell: str) -> str:
@@ -111,6 +106,6 @@ def training_profile() -> TrainingProfileConfig:
 def ensure_contract(data_client: pi_sdk.data.Client) -> str:
     """Register the contract (idempotent) and return its ID."""
     result = data_client.ensure_platform_contract(
-        CONTRACT_NAME, contract(), description="SO-101 (5 joints + gripper), front + wrist camera, blaster trigger, 30 Hz"
+        CONTRACT_NAME, contract(), description="SO-101 (5 joints, no gripper), front + wrist camera, blaster trigger, 30 Hz"
     )
     return result.platform_contract.platform_contract_id
