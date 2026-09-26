@@ -17,7 +17,7 @@ Start with [docs/plan.md](docs/plan.md).
 autobot/            shared code (schema.py: contract, profile, PI clients)
 scripts/            smoke_test.py, watch_hosting.py; record.py / robot_server.py go here
 scripts/experiments pipeline tests: mock_pipeline.py, mock_short.py, real_sample.py
-firmware/           ESP32 sketch (relay, buttons, LED)
+firmware/           ESP32 sketch (1 relay, DONE + SHOOT buttons)
 data/               recordings, shards, downloads (git-ignored)
 runs/               run IDs (*_state.json) and poll logs
 docs/               plan, notes/status, concepts, hardware, PI SDK guide
