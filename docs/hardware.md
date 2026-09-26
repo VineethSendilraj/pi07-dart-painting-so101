@@ -91,8 +91,8 @@ The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon
 
 - Start rigd (it owns the ESP32 port): `rigd --port /dev/cu.usbserial-0001` (from act-athon's venv).
 - `record.py --rigd-url http://localhost:8080 …` instead of `--esp32-port`: releasing the button fires (firmware) and is recorded as `SHOOT`.
-- `robot_server.py … --rigd-url http://localhost:8080`: the same button's release means `TURN` (test mode never fires); `fire()` goes through rigd with heartbeat and cooldown checks.
-- `autobot/hardware.py: RigdESP32` sets the button mode on connect (the board remembers it in flash) and renews rigd's heartbeat lease from `events()`/`heartbeat()`, so the board is only live while the script runs.
+- `robot_server.py … --rigd-url http://localhost:8080`: the same button's release means `TURN` (test mode never fires); `fire()` goes through rigd; the firmware enforces the pulse cap and cooldown.
+- Flash the matching image first: `scripts/flash_fire_ctl.sh train` for recording, `scripts/flash_fire_ctl.sh test` for the game (act-athon repo). `RigdESP32` also sets the button mode on connect, so a mismatch is corrected until the next reboot.
 - **Heartbeat:** firmware drops to SAFE if the laptop sends nothing for ~500 ms, so a crashed laptop can't leave it live. Teammate's `firmware/fire_ctl/` already implements SAFE → READY → FIRING → COOLDOWN with this.
 
 ### How the trigger fits the model

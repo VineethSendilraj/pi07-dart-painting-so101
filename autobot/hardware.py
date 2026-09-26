@@ -12,7 +12,7 @@ ESP32 serial protocol (115200 baud, newline-terminated):
 
 `RigdESP32` is a drop-in alternative that talks to act-athon's rigd daemon (HTTP) instead of the
 serial port: one operator button (released = SHOOT in train mode, TURN in test mode), the ESP32 runs
-act-athon's `fire_ctl` firmware (heartbeat check, fires on release, no arming input). See `docs/hardware.md`.
+act-athon's `fire_ctl` MVP firmware (1.0.0: fires on release, train/test images, no arming, no heartbeat). See `docs/hardware.md`.
 """
 
 import json
@@ -94,8 +94,7 @@ class RigdESP32:
       mode="train"  releasing it fires the blaster (the firmware does it) and we report "SHOOT"
       mode="test"   releasing it never fires; we report "TURN" (the human's turn is done)
     fire() asks rigd for one pulse and reports "FIRED", or "COOLDOWN" / "NO_HEARTBEAT".
-    The board only fires while we keep renewing rigd's heartbeat lease, so heartbeat() and events()
-    both renew it (throttled). If this process dies, the board drops to SAFE within ~1.5 s.
+    heartbeat() and events() renew rigd's lease (harmless; firmware 1.0.0 no longer needs a heartbeat).
     """
 
     LEASE_EVERY_S = 0.25   # rigd's lease lasts 1 s
