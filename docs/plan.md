@@ -22,7 +22,7 @@ Blaster on the SO-101 plays tic-tac-toe against a person. Claude picks the move;
 ## Wiring
 
 ```
-laptop ── powered USB hub
+laptop ──USB-C── powered USB hub
           ├─ 1: follower arm (Seeed servo board)
           ├─ 2: ESP32 (1 relay + DONE and SHOOT buttons)
           ├─ 3: wrist_camera
@@ -46,13 +46,42 @@ laptop ── powered USB hub
 - In: joints [5] + both cameras. Out per step: joints → arm, trigger → ESP32.
 - Task string: `"shoot A1"` … `"shoot C3"`. One model, no subtasks.
 
+## How the VLA works
+
+- **30 Hz = 30 steps per second.** Each step is one row of data; one **episode** is one teleop recording (both camera videos + the arm/trigger rows), ~5–8 s ≈ 150–240 rows.
+- **One row (the contract, `so101_blaster_v1`):**
+
+  | Column | Size | Role | Used by the model? |
+  | --- | --- | --- | --- |
+  | `system/step` (timestamp) | — | row header, links everything in the row | — |
+  | `front_camera`, `wrist_camera` frames | 2 images | observation | yes (input) |
+  | follower joints (measured) | 5 | observation | yes (state input) |
+  | follower gripper (measured) | 1 | observation | no (blaster taped on) |
+  | leader joints (commanded) | 5 | action | yes (output) |
+  | leader gripper (commanded) | 1 | action | no |
+  | trigger (SHOOT button, 0/1) | 1 | action | yes (output) |
+
+  There's no "observed gun" column: the blaster has no sensor, so the trigger is action-only.
+- **Limits:** up to **32 state numbers** and, separately, up to **32 action numbers** per row, plus 1–16 cameras. We use 5 in, 6 out.
+- **Output:** each call returns an **action chunk**: rows = future time steps (π0.7 plans ~50; we play 10, then ask again), columns = joints [5] → arm USB, trigger [1] → ESP32.
+- **Prompt:** `"shoot B2"` (overall task and subtask are the same string).
+
+## Fine-tuning API (PI)
+
+Two services plus a hosted model:
+1. **Data** (`api.pi-fleet.com/v1/data`): register the contract, then per episode: register → upload shards → finalize (PI validates it against the contract). `scripts/upload.py`.
+2. **Fine-tuning** (`/v1/finetuning`): training profile (which columns the model uses) → dataset filter (which episodes, `success=True`) → fine-tune → poll status / MAE → checkpoint. `scripts/train.py`.
+3. **Inference:** a checkpoint's `gateway_url` (websocket). `scripts/robot_server.py`. Currently blocked: no checkpoint gets a `gateway_url`.
+
+Fine-tunes can run **in parallel**: e.g. a pilot on 20–50 episodes while recording the rest, then a full run (or `--continue-from` the pilot). A run takes ~25 min, mostly data prep.
+
 ## Recording (`scripts/record.py` → `scripts/upload.py` → `scripts/train.py`)
 
 - Aim with the leader arm, press SHOOT (off camera). Every press is **logged as a shot** (trigger = 1 for ~10 steps) and clicks the relay.
   - **Master switch off (most demos):** the relay clicks with no power behind it, so no dart leaves. Nothing to collect.
   - **Master switch on (a few demos):** real shots, so recordings include real darts on the board.
 - Episode: reset with the leader → SPACE → aim → SHOOT → auto-ends 0.7 s later (~5–8 s total). Keys: `e` end, `x` redo, `q` quit.
-- ~12–15 per cell → ~110–135 episodes (~70 min). Upload with `success=True` + full-length `control_source="human"` span.
+- ~12–15 per cell across the **9 cells** → ~110–135 episodes (~70 min). Upload with `success=True` + full-length `control_source="human"` span.
 - Pilot first: A1, B2, C3 × 10 → short fine-tune → check.
 
 ## Game loop (`scripts/robot_server.py` + Claude)
@@ -65,6 +94,7 @@ shoot(cell): π0.7 loop at 30 Hz, "shoot B2"
    ends on FIRED (or 10 s timeout) → scripted return to rest
 Claude checks the dart landed → screen shows "your turn"
 ```
+- Claude runs **once per turn** (one overhead photo), not continuously: it's too slow for the 30 Hz loop, and the board only changes between turns. π0.7 does the continuous part.
 - One Python process owns all USB devices. Spacebar = backup done button.
 - **Safety rules** (our code, between π0.7 and the hardware): the fire rule stops a one-step flicker or a mid-swing shot from firing, and allows one dart per turn; the speed limit turns a bad model output into slow, correctable motion instead of a lurch.
 
