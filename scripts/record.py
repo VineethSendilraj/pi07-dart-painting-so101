@@ -5,6 +5,7 @@
   # act-athon rig (fire_ctl firmware + rigd running): one button, releasing it fires
   .venv/bin/python scripts/record.py --follower-port … --leader-port … --rigd-url http://localhost:8080 …
   .venv/bin/python scripts/record.py --fake --auto --per-cell 1     # no hardware, for testing
+  .venv/bin/python scripts/record.py --fake --rigd-url http://localhost:8080 --per-cell 1   # fake arm, real button
 
 Each episode: reset the arm with the leader → SPACE → aim → press SHOOT → the episode ends
 AFTER_SHOT_S later and is saved to data/recordings/<session>/<episode_id>/.
@@ -95,7 +96,9 @@ def main() -> None:
         s.task_for(cell)  # validates
 
     if a.fake:
-        rig, esp = FakeRig(), FakeESP32(shoot_every=a.fake_shot_every)
+        # --fake --rigd-url: fake arm + cameras, real button/relay via act-athon's rigd (dry run)
+        esp = RigdESP32(a.rigd_url, mode="train") if a.rigd_url else FakeESP32(shoot_every=a.fake_shot_every)
+        rig = FakeRig()
     else:
         if not (a.follower_port and a.leader_port and (a.esp32_port or a.rigd_url)):
             p.error("--follower-port, --leader-port and --esp32-port or --rigd-url are required (or use --fake)")

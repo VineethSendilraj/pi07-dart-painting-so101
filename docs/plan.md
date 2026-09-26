@@ -77,6 +77,8 @@ Fine-tunes can run **in parallel**: e.g. a pilot on 20–50 episodes while recor
 
 ## Recording (`scripts/record.py` → `scripts/upload.py` → `scripts/train.py`)
 
+> **With act-athon's rig** (one button, `fire_ctl` train image, `rigd` running): add `--rigd-url http://localhost:8080` instead of `--esp32-port`. The button **release** fires and is recorded as SHOOT (label starts at the release = the real shot). Dry run without arms: `record.py --fake --rigd-url http://localhost:8080`. See [hardware.md](hardware.md#using-act-athons-rig-one-button-rigd).
+
 - Aim with the leader arm, press SHOOT (off camera). Every press is **logged as a shot** (trigger = 1 for ~10 steps) and clicks the relay.
   - **Master switch off (most demos):** the relay clicks with no power behind it, so no dart leaves. Nothing to collect.
   - **Master switch on (a few demos):** real shots, so recordings include real darts on the board.
