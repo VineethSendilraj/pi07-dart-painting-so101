@@ -53,6 +53,7 @@ scripts/record.py    teleop recording → data/recordings/<session>/<episode_id>
 scripts/upload.py    validate → register → upload → finalize (idempotent)
 scripts/train.py     contract | profile | finetune NAME | status | evals NAME | watch NAME
 scripts/robot_server.py  shoot CELL | game --brain claude|random
+scripts/infer_test.py   hit a hosted checkpoint with synthetic frames (connection + output format)
 scripts/smoke_test.py, scripts/watch_hosting.py
 firmware/blaster_esp32/  ESP32 sketch
 tests/test_control.py    safety-rule tests
