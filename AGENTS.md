@@ -63,7 +63,7 @@ Everything runs from the repo root with `.venv/bin/python …`; add `--fake` to 
 
 - **Credentials never enter the repo or logs.** API key: `~/.config/pi/api_key` (or `PI_API_KEY`); registry service-account JSON: `~/.config/pi/service-account.json` (only for `pip install pi-sdk`). Scan for `sk_` / `BEGIN PRIVATE KEY` before committing.
 - **Ask before creating PI resources** (contracts, profiles, filters, fine-tunes, episodes); they're permanent in the org. Contracts and profiles are immutable: to change one, bump the name (`_v2`) in `autobot/schema.py`.
-- Never upload fake/test episodes to the real dataset path (`so101-blaster/v1`); delete test recordings under `data/recordings/` after tests.
+- Never upload fake/test episodes to the real dataset path (`so101-blaster/v2`); delete test recordings under `data/recordings/` after tests.
 - Don't change topic names, order, or `FPS` without a new contract + profile; recorded data would stop matching.
 - Keep the safety rules (speed limit, fire rule, heartbeat) between π0.7 and the hardware.
 - Install with plain pip from PI's registry (see README); `uv` can't use the registry login. Ask before adding dependencies.

@@ -14,7 +14,7 @@ from pi_sdk.finetuning import ArraySlice, TrainingProfileConfig
 FPS = 30
 CONTRACT_NAME = "so101_blaster_v2"  # v1 (with gripper) is deprecated
 PROFILE_NAME = "so101-blaster-v2"
-DATASET_PATH = "so101-blaster/v1"  # source_dataset_path for real recordings
+DATASET_PATH = "so101-blaster/v2"  # source_dataset_path for real recordings
 
 JOINT_NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
 CAMERAS = ("front_camera", "wrist_camera")
