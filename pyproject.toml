@@ -1,0 +1,8 @@
+[project]
+name = "autobot"
+version = "0.1.0"
+description = "Tic-tac-toe blaster: SO-101 + pi0.7 for the act-athon"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["autobot"]

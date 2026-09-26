@@ -1,0 +1,25 @@
+{
+  "platform_contract_id": "01a0dcf9-3718-7140-890f-3b91eac9ee18",
+  "episode_ids": [
+    "hf-so101-dice-0000",
+    "hf-so101-dice-0001",
+    "hf-so101-dice-0002",
+    "hf-so101-dice-0003",
+    "hf-so101-dice-0004"
+  ],
+  "approx_steps": 1999,
+  "task": "pick the dice and put it in the white bowl",
+  "training_profile_id": "11610987-d3d5-4c83-91f8-73df92eddb21",
+  "dataset_filter_id": "968dc67b-b6c0-4b5e-adee-5ce8ee085465",
+  "run_id": "504e57bd-3729-4aec-85a2-b2fe25853686",
+  "finetune_created": "2026-09-26T02:53:46.759521",
+  "evaluations": [
+    [
+      199,
+      13.201112151145935,
+      null
+    ]
+  ],
+  "checkpoint_id": "820631bb-7aaf-5dfe-a53b-ee0c3b8994e3",
+  "old_run_id_200": "b913578e-c6a1-45d1-be28-83d8728dd8d0"
+}

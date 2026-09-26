@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.egg-info/
+.DS_Store
+
+# recordings, shards, downloads: large and regenerable
+data/**
+!data/**/
+!data/**/.gitkeep
+*.mcap
+
+# credentials live in ~/.config/pi, never in the repo
+.env
+*service-account*.json
+api_key
