@@ -46,16 +46,16 @@ laptop ── powered USB hub
 - In: joints [5] + both cameras. Out per step: joints → arm, trigger → ESP32.
 - Task string: `"shoot A1"` … `"shoot C3"`. One model, no subtasks.
 
-## Recording (`scripts/record.py`)
+## Recording (`scripts/record.py` → `scripts/upload.py` → `scripts/train.py`)
 
 - Aim with the leader arm, press SHOOT (off camera). Every press is **logged as a shot** (trigger = 1 for ~10 steps) and clicks the relay.
   - **Master switch off (most demos):** the relay clicks with no power behind it, so no dart leaves. Nothing to collect.
   - **Master switch on (a few demos):** real shots, so recordings include real darts on the board.
-- Episode: varied start pose → aim → fire → end ~0.5 s later (~5–8 s total).
+- Episode: reset with the leader → SPACE → aim → SHOOT → auto-ends 0.7 s later (~5–8 s total). Keys: `e` end, `x` redo, `q` quit.
 - ~12–15 per cell → ~110–135 episodes (~70 min). Upload with `success=True` + full-length `control_source="human"` span.
 - Pilot first: A1, B2, C3 × 10 → short fine-tune → check.
 
-## Game loop (`scripts/robot_server.py` + Claude)
+## Game loop (`scripts/robot_server.py` + Claude, to build)
 
 ```
 human places O → presses DONE → Claude (claude-opus-5-5) sees board → shoot(cell)

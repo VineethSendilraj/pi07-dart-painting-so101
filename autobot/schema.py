@@ -1,7 +1,7 @@
-"""SO-101 + blaster schema shared by the recorder, uploader, and inference loop.
+"""SO-101 + blaster schema shared by the recorder, uploader, trainer, and inference loop.
 
-One place defines topic names, shapes, and order. Change it here, then create a new
-contract/profile (both are immutable on PI's side).
+One place defines topic names, shapes, and order. The contract and profile are immutable
+on PI's side: change them here, bump the name, and register a new one.
 """
 
 import os
@@ -12,10 +12,13 @@ from pi_sdk.data import McapContract, NdArrayContract, TopicContract
 from pi_sdk.finetuning import ArraySlice, TrainingProfileConfig
 
 FPS = 30
-CONTRACT_NAME = "so101_blaster_v1"
+CONTRACT_NAME = "so101_blaster_v1"  # registered 2026-09-26: 01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8
+PROFILE_NAME = "so101-blaster-joints-trigger-v1"
+DATASET_PATH = "so101-blaster/v1"  # source_dataset_path for real recordings
 
 JOINT_NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
 CAMERAS = ("front_camera", "wrist_camera")
+CELLS = tuple(f"{col}{row}" for row in "123" for col in "ABC")  # A1 B1 C1 A2 ... C3
 
 CAMERA_TOPICS = {cam: f"observation/{cam}/rgb/image" for cam in CAMERAS}
 OBS_JOINTS = "observation/arm/joints/position"
@@ -31,8 +34,19 @@ ARRAY_SHAPES = {
     ACT_GRIPPER: (1,),
     ACT_TRIGGER: (1,),
 }
+# Everything recorded (the contract). The gripper servo is still read and recorded even
+# though the blaster is taped on; the training profile leaves it out.
 STATE_TOPICS = (OBS_JOINTS, OBS_GRIPPER)
 ACTION_TOPICS = (ACT_JOINTS, ACT_GRIPPER, ACT_TRIGGER)
+# What the model sees and predicts (the training profile), in order.
+MODEL_STATE_TOPICS = (OBS_JOINTS,)
+MODEL_ACTION_TOPICS = (ACT_JOINTS, ACT_TRIGGER)
+
+
+def task_for(cell: str) -> str:
+    if cell not in CELLS:
+        raise ValueError(f"unknown cell {cell!r}; expected one of {' '.join(CELLS)}")
+    return f"shoot {cell}"
 
 
 def api_key() -> str:
@@ -88,7 +102,15 @@ def training_profile() -> TrainingProfileConfig:
     return TrainingProfileConfig(
         base_camera_topics=(CAMERA_TOPICS["front_camera"],),
         wrist_camera_topics=(CAMERA_TOPICS["wrist_camera"],),
-        state_slices=tuple(ArraySlice(t) for t in STATE_TOPICS),
-        action_topics=ACTION_TOPICS,
+        state_slices=tuple(ArraySlice(t) for t in MODEL_STATE_TOPICS),
+        action_topics=MODEL_ACTION_TOPICS,
         action_space="absolute",
     )
+
+
+def ensure_contract(data_client: pi_sdk.data.Client) -> str:
+    """Register the contract (idempotent) and return its ID."""
+    result = data_client.ensure_platform_contract(
+        CONTRACT_NAME, contract(), description="SO-101 (5 joints + gripper), front + wrist camera, blaster trigger, 30 Hz"
+    )
+    return result.platform_contract.platform_contract_id

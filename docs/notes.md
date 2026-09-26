@@ -29,14 +29,7 @@ Check hosting yourself (from the repo root):
 ```
 `gateway_url=None` everywhere = nothing hosted. The partner portal (partner.pi-fleet.com) has no fine-tune/checkpoint page; its Models page ("shared model registry") is empty, possibly unrelated.
 
-Mock pipeline commands (each idempotent):
-```bash
-.venv/bin/python scripts/experiments/mock_pipeline.py contract   # register contract
-.venv/bin/python scripts/experiments/mock_pipeline.py upload     # fake episodes
-.venv/bin/python scripts/experiments/mock_pipeline.py finetune   # profile + filter + fine-tune
-.venv/bin/python scripts/experiments/mock_pipeline.py status     # progress + checkpoints (saves gateway_url)
-.venv/bin/python scripts/experiments/mock_pipeline.py infer      # one inference call
-```
+The test-run code (mock_pipeline.py, mock_short.py, real_sample.py) was removed on 2026-09-26; it's in git history (commit ddaaf44). Its IDs stay in `runs/*_state.json` and its data in `data/`. The real workflow is `scripts/record.py` → `upload.py` → `train.py` (see README).
 
 ## Credentials (kept out of this folder)
 
@@ -85,12 +78,13 @@ Submissions close **Sunday 9:00 am**. Demos are live on the real machine. Fine-t
 
 **Episodes:** failures out (`success=False`), recoveries in, every teleop demo gets a full-length `control_source="human"` span.
 
-## Tooling to build
+## Tooling
 
-- `scripts/record.py`: 30 Hz loop (leader → follower, cameras, fire button) writing MCAP with the schema in `autobot/schema.py`, then create/upload/finalize. Subtask keypresses → `language_segment` spans.
-- `scripts/upload.py` (for plain LeRobot datasets): `pi-upload-lerobot --dry-run` → real upload (`--max-workers`) → add spans in a second pass with `replace_annotations` / `bulk_update`. (`pi-upload-lerobot` can't attach annotation spans itself.)
-- `scripts/dagger_record.py`: policy drives, pedal/key flips to leader teleop (leader torque on and mirroring while the policy drives, off at takeover); logs switches as policy/human spans.
-- `scripts/run.py`: inference loop on the real arm.
+Built (2026-09-26): `autobot/{schema,episode,hardware}.py`, `scripts/record.py`, `scripts/upload.py`, `scripts/train.py`, `firmware/blaster_esp32/`. Tested end to end with `record.py --fake` → local contract validation → `upload.py --dry-run`; not yet on real hardware.
+
+Still to build:
+- `scripts/robot_server.py`: game loop (Claude `shoot(cell)` tool → π0.7 `PolicyClient` → speed limit → arm; fire rule → ESP32 `F`; heartbeat).
+- `scripts/dagger_record.py`: policy drives, a key hands control to the leader arm; logs policy/human `control_source` spans.
 
 ## Open questions for PI or the organizers
 
