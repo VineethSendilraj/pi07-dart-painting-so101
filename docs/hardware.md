@@ -87,11 +87,11 @@ The fire trigger is an **SPDT microswitch with a motor brake**, not a simple on/
 
 ### Using act-athon's rig (one button, rigd)
 
-The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon](https://github.com/yuviji/act-athon), `docs/02-hardware/wiring.md`) behind its `rigd` HTTP daemon. Pins: relay IN on **GPIO13** (high-level trigger), one operator button on **GPIO25**, **GPIO26 permanently wired to GND** (always armed; the blaster's rocker switch is the only switch). **Don't flash this repo's `firmware/` sketch onto that rig**: it drives GPIO26 as the relay output, which is wired straight to GND there.
+The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon](https://github.com/yuviji/act-athon), `docs/02-hardware/wiring.md`) behind its `rigd` HTTP daemon. Pins: relay IN on **GPIO13** (high-level trigger), one operator button on **GPIO25**; no arming input (the blaster's rocker switch, power + rev, is the only switch). **Don't flash this repo's `firmware/` sketch onto that rig**: its pin map (relay on GPIO26, DONE on 33) doesn't match that rig's wiring.
 
 - Start rigd (it owns the ESP32 port): `rigd --port /dev/cu.usbserial-0001` (from act-athon's venv).
 - `record.py --rigd-url http://localhost:8080 …` instead of `--esp32-port`: releasing the button fires (firmware) and is recorded as `SHOOT`.
-- `robot_server.py … --rigd-url http://localhost:8080`: the same button's release means `TURN` (test mode never fires); `fire()` goes through rigd with heartbeat, arm and cooldown checks.
+- `robot_server.py … --rigd-url http://localhost:8080`: the same button's release means `TURN` (test mode never fires); `fire()` goes through rigd with heartbeat and cooldown checks.
 - `autobot/hardware.py: RigdESP32` sets the button mode on connect (the board remembers it in flash) and renews rigd's heartbeat lease from `events()`/`heartbeat()`, so the board is only live while the script runs.
 - **Heartbeat:** firmware drops to SAFE if the laptop sends nothing for ~500 ms, so a crashed laptop can't leave it live. Teammate's `firmware/fire_ctl/` already implements SAFE → READY → FIRING → COOLDOWN with this.
 

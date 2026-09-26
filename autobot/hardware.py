@@ -12,7 +12,7 @@ ESP32 serial protocol (115200 baud, newline-terminated):
 
 `RigdESP32` is a drop-in alternative that talks to act-athon's rigd daemon (HTTP) instead of the
 serial port: one operator button (released = SHOOT in train mode, TURN in test mode), the ESP32 runs
-act-athon's `fire_ctl` firmware (heartbeat + arm checks, fires on release). See `docs/hardware.md`.
+act-athon's `fire_ctl` firmware (heartbeat check, fires on release, no arming input). See `docs/hardware.md`.
 """
 
 import json
@@ -93,13 +93,13 @@ class RigdESP32:
     rigd owns the ESP32's serial port; we talk to it over HTTP. One physical button (GPIO25):
       mode="train"  releasing it fires the blaster (the firmware does it) and we report "SHOOT"
       mode="test"   releasing it never fires; we report "TURN" (the human's turn is done)
-    fire() asks rigd for one pulse and reports "FIRED", or "COOLDOWN" / "NO_HEARTBEAT" / "DISARMED".
+    fire() asks rigd for one pulse and reports "FIRED", or "COOLDOWN" / "NO_HEARTBEAT".
     The board only fires while we keep renewing rigd's heartbeat lease, so heartbeat() and events()
     both renew it (throttled). If this process dies, the board drops to SAFE within ~1.5 s.
     """
 
     LEASE_EVERY_S = 0.25   # rigd's lease lasts 1 s
-    BLOCKED = {"cooldown": "COOLDOWN", "no_hb": "NO_HEARTBEAT", "disarmed": "DISARMED"}
+    BLOCKED = {"cooldown": "COOLDOWN", "no_hb": "NO_HEARTBEAT"}
 
     def __init__(self, url: str = "http://localhost:8080", mode: str = "train", timeout: float = 0.3):
         if mode not in ("train", "test"):
