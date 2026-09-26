@@ -24,7 +24,7 @@ Blaster on the SO-101 plays tic-tac-toe against a person. Claude picks the move;
 ```
 laptop ── powered USB hub
           ├─ 1: follower arm (Seeed servo board)
-          ├─ 2: ESP32 (relay, buttons, LED)
+          ├─ 2: ESP32 (1 relay + DONE and SHOOT buttons)
           ├─ 3: wrist_camera
           ├─ 4: front_camera
           └─ 5: leader arm (plug in only for recording)
