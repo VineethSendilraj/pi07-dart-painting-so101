@@ -12,38 +12,19 @@ Upload later with scripts/upload.py.
 
 import argparse
 import random
-import select
-import sys
-import termios
 import time
-import tty
-from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
 from autobot import schema as s
 from autobot.episode import Step, validate, write_episode
 from autobot.hardware import ESP32, FakeESP32, FakeRig, Rig
+from autobot.keys import keyboard
 
 ROOT = Path(__file__).resolve().parents[1]
 TRIGGER_HOLD_STEPS = 10  # label each SHOOT press as trigger=1 for ~0.33 s
 AFTER_SHOT_S = 0.7  # keep recording this long after the shot, then end the episode
 MAX_EPISODE_S = 15.0
-
-
-@contextmanager
-def keyboard():
-    """Single-key reads from the terminal without Enter. Yields a non-blocking getter."""
-    if not sys.stdin.isatty():
-        yield lambda: None
-        return
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    tty.setcbreak(fd)
-    try:
-        yield lambda: sys.stdin.read(1) if select.select([sys.stdin], [], [], 0)[0] else None
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
 def teleop_tick(rig) -> tuple:

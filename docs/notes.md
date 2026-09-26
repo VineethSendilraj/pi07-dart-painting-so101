@@ -82,8 +82,9 @@ Submissions close **Sunday 9:00 am**. Demos are live on the real machine. Fine-t
 
 Built (2026-09-26): `autobot/{schema,episode,hardware}.py`, `scripts/record.py`, `scripts/upload.py`, `scripts/train.py`, `firmware/blaster_esp32/`. Tested end to end with `record.py --fake` → local contract validation → `upload.py --dry-run`; not yet on real hardware.
 
+Also built: `scripts/robot_server.py` (`shoot CELL` / `game`), `autobot/policy.py`, `autobot/control.py`, `tests/test_control.py`. Tested with `--fake` (fake arm + fake policy + random brain) and the safety-rule tests. The Claude brain (`claude-opus-5-5`, strict `shoot` tool, effort `medium`) needs `pip install anthropic` and an Anthropic API key; untested. The real `PiPolicy` path needs a hosted `gateway_url`.
+
 Still to build:
-- `scripts/robot_server.py`: game loop (Claude `shoot(cell)` tool → π0.7 `PolicyClient` → speed limit → arm; fire rule → ESP32 `F`; heartbeat).
 - `scripts/dagger_record.py`: policy drives, a key hands control to the leader arm; logs policy/human `control_source` spans.
 
 ## Open questions for PI or the organizers

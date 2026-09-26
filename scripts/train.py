@@ -6,7 +6,7 @@
   .venv/bin/python scripts/train.py finetune full-v2 --continue-from <checkpoint_id>
   .venv/bin/python scripts/train.py status                        # all fine-tunes + checkpoints + gateway_url
   .venv/bin/python scripts/train.py evals pilot-v1                # train/validation MAE
-  .venv/bin/python scripts/train.py watch pilot-v1                # poll until hosted (gateway_url) or failed
+  .venv/bin/python scripts/train.py watch pilot-v1                # poll until trained (or --until-hosted)
 
 Fine-tune IDs are saved to runs/finetunes/<name>.json.
 """
@@ -112,6 +112,9 @@ def cmd_watch(a, data, ft):
             last = now
         if any(c.gateway_url for c in cps) or r.state in ("failed", "cancelled"):
             return
+        if r.state == "succeeded" and cps and all(c.state == "available" for c in cps) and not a.until_hosted:
+            print("trained; checkpoint available (no gateway_url yet: use --until-hosted to keep waiting)")
+            return
         time.sleep(a.interval)
 
 
@@ -134,6 +137,7 @@ def main() -> None:
     w = sub.add_parser("watch")
     w.add_argument("name")
     w.add_argument("--interval", type=int, default=120)
+    w.add_argument("--until-hosted", action="store_true", help="keep waiting after training until gateway_url appears")
     a = p.parse_args()
     if a.cmd == "finetune" and not a.dataset_path:
         a.dataset_path = [s.DATASET_PATH]

@@ -53,6 +53,11 @@ Use plain pip, not `uv` (uv can't use the registry's keyring login by default).
 .venv/bin/python scripts/train.py finetune pilot-v1 --steps 1000
 .venv/bin/python scripts/train.py watch pilot-v1
 .venv/bin/python scripts/train.py status
+
+# 4. Play (needs a hosted checkpoint; --brain claude needs `pip install anthropic` + ANTHROPIC_API_KEY)
+.venv/bin/python scripts/robot_server.py shoot B2 --finetune pilot-v1 --follower-port … --esp32-port …
+.venv/bin/python scripts/robot_server.py game --finetune pilot-v1 --brain claude --follower-port … --esp32-port …
+#    no hardware? --fake (fake arm + fake policy), e.g. `robot_server.py --fake game --brain random`
 ```
 Find ports with `lerobot-find-port`; calibrate both arms first with `lerobot-calibrate` (ids `follower` / `leader`).
 
@@ -69,14 +74,19 @@ autobot/                 shared library
   schema.py              contract, training profile, topic names, cells, PI clients
   episode.py             episode → MCAP shards on disk, validation
   hardware.py            SO-101 arms + cameras (LeRobot), ESP32 serial, fake versions
+  policy.py              π0.7 via the hosted checkpoint (PolicyClient), fake policy
+  control.py             shoot(cell) loop, speed limit, fire rule
+  keys.py                single-key terminal input
 scripts/
   record.py              teleop recording
   upload.py              push episodes to PI
   train.py               contract / profile / finetune / status / evals / watch
+  robot_server.py        shoot one cell, or play a full game (Claude or random brain)
   smoke_test.py          check the API key
   watch_hosting.py       poll every checkpoint for a gateway_url
 firmware/blaster_esp32/  ESP32 sketch: 1 relay, SHOOT + DONE buttons
 data/                    recordings, shards, downloads (git-ignored)
 runs/                    IDs of past test runs and poll logs
+tests/                   safety-rule tests (.venv/bin/python tests/test_control.py)
 docs/                    plan, notes/status, concepts, hardware, PI SDK guide
 ```

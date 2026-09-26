@@ -55,7 +55,7 @@ laptop ── powered USB hub
 - ~12–15 per cell → ~110–135 episodes (~70 min). Upload with `success=True` + full-length `control_source="human"` span.
 - Pilot first: A1, B2, C3 × 10 → short fine-tune → check.
 
-## Game loop (`scripts/robot_server.py` + Claude, to build)
+## Game loop (`scripts/robot_server.py` + Claude)
 
 ```
 human places O → presses DONE → Claude (claude-opus-5-5) sees board → shoot(cell)

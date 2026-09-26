@@ -123,18 +123,23 @@ class FakeRig:
 
 
 class FakeESP32:
-    """Presses SHOOT every `shoot_every` seconds so fake episodes end on their own."""
+    """Presses SHOOT every `shoot_every` seconds (None = never) and answers F with FIRED."""
 
-    def __init__(self, *_, shoot_every: float = 2.5):
+    def __init__(self, *_, shoot_every: float | None = 2.5):
         self.shoot_every = shoot_every
-        self.next_shot = time.time() + shoot_every
+        self.next_shot = time.time() + shoot_every if shoot_every else float("inf")
+        self.pending: list[str] = []
 
     def events(self) -> list[str]:
+        out, self.pending = self.pending, []
         if time.time() >= self.next_shot:
             self.next_shot = time.time() + self.shoot_every
-            return ["SHOOT"]
-        return []
+            out.append("SHOOT")
+        return out
 
     def heartbeat(self) -> None: ...
-    def fire(self) -> None: ...
+
+    def fire(self) -> None:
+        self.pending.append("FIRED")
+
     def close(self) -> None: ...
