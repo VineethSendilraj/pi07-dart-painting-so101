@@ -14,6 +14,7 @@ One process owns every device. The arm returns to its starting pose after each s
 import argparse
 import base64
 import random
+import time
 
 import numpy as np
 
@@ -111,6 +112,7 @@ def cmd_game(a, rig, esp, policy, rest):
                     return
                 if k == " " or "TURN" in esp.events() or a.fake:
                     break
+                time.sleep(0.02)
             images, _, _ = rig.observe()
             cell, note = brain.pick(images["front_camera"], shots)
             if cell is None:
