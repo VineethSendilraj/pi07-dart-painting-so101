@@ -24,10 +24,10 @@
 <circle cx="224" cy="102" r="16" fill="none" stroke="#FFFFFF" stroke-width="2"/><line x1="224" y1="80" x2="224" y2="124" stroke="#FFFFFF" stroke-width="2"/><line x1="202" y1="102" x2="246" y2="102" stroke="#FFFFFF" stroke-width="2"/>
 <text class="s" x="224" y="164" text-anchor="middle">wrist_camera (barrel)</text>
 
-<text class="l" x="24" y="196">state: joint angles now (5 numbers)</text>
+<text class="l" x="24" y="196">state: follower joints now (F1–F5)</text>
 <g class="in"><rect x="24" y="204" width="52" height="28"/><rect x="76" y="204" width="52" height="28"/><rect x="128" y="204" width="52" height="28"/><rect x="180" y="204" width="52" height="28"/><rect x="232" y="204" width="52" height="28"/></g>
 <text class="c" x="50" y="222">10.2</text><text class="c" x="102" y="222">-42.0</text><text class="c" x="154" y="222">57.1</text><text class="c" x="206" y="222">3.4</text><text class="c" x="258" y="222">0.3</text>
-<text class="s" x="50" y="246" text-anchor="middle">j1</text><text class="s" x="102" y="246" text-anchor="middle">j2</text><text class="s" x="154" y="246" text-anchor="middle">j3</text><text class="s" x="206" y="246" text-anchor="middle">j4</text><text class="s" x="258" y="246" text-anchor="middle">j5</text>
+<text class="s" x="50" y="246" text-anchor="middle">F1</text><text class="s" x="102" y="246" text-anchor="middle">F2</text><text class="s" x="154" y="246" text-anchor="middle">F3</text><text class="s" x="206" y="246" text-anchor="middle">F4</text><text class="s" x="258" y="246" text-anchor="middle">F5</text>
 
 <text class="l" x="24" y="278">text prompt (from Claude's move)</text>
 <rect x="24" y="286" width="170" height="36" rx="18" fill="#EEEDFE" stroke="#7F77DD"/>
@@ -60,7 +60,7 @@
 <g class="hd"><rect x="560" y="64" width="60" height="24"/></g>
 <g class="out"><rect x="620" y="64" width="52" height="24"/><rect x="672" y="64" width="52" height="24"/><rect x="724" y="64" width="52" height="24"/><rect x="776" y="64" width="52" height="24"/><rect x="828" y="64" width="52" height="24"/></g>
 <g class="tr"><rect x="880" y="64" width="72" height="24"/></g>
-<text class="cb" x="590" y="80">step</text><text class="cb" x="646" y="80">j1</text><text class="cb" x="698" y="80">j2</text><text class="cb" x="750" y="80">j3</text><text class="cb" x="802" y="80">j4</text><text class="cb" x="854" y="80">j5</text><text class="cb" x="916" y="80">trigger</text>
+<text class="cb" x="590" y="80">step</text><text class="cb" x="646" y="80">L1</text><text class="cb" x="698" y="80">L2</text><text class="cb" x="750" y="80">L3</text><text class="cb" x="802" y="80">L4</text><text class="cb" x="854" y="80">L5</text><text class="cb" x="916" y="80">trigger</text>
 <!-- rows -->
 <g fill="#FFFFFF" stroke="#D3D1C7">
 <rect x="560" y="88" width="392" height="22"/><rect x="560" y="110" width="392" height="22"/><rect x="560" y="132" width="392" height="22"/><rect x="560" y="154" width="392" height="22"/><rect x="560" y="176" width="392" height="22"/>
@@ -87,7 +87,7 @@
 <path d="M750 332 L 750 370" fill="none" stroke="#BA7517" stroke-width="2" marker-end="url(#a)"/>
 <path d="M916 332 L 916 426" fill="none" stroke="#D85A30" stroke-width="2" marker-end="url(#a)"/>
 <rect x="600" y="372" width="300" height="46" rx="6" class="out"/>
-<text class="l" x="750" y="392" text-anchor="middle">joints [5] → speed limit (≤3°/step)</text>
+<text class="l" x="750" y="392" text-anchor="middle">L1–L5 → speed limit (≤3°/step)</text>
 <text class="s" x="750" y="408" text-anchor="middle">→ follower arm over USB (servo board)</text>
 <rect x="840" y="428" width="124" height="46" rx="6" class="tr"/>
 <text class="l" x="902" y="448" text-anchor="middle">trigger → fire rule</text>
@@ -97,14 +97,14 @@
 <line x1="24" y1="490" x2="956" y2="490" stroke="#D3D1C7"/>
 <text class="h" x="24" y="516">4. Training data: one row per step (30 rows/second) · one episode ≈ 150–240 rows</text>
 <!-- group header -->
-<rect x="94" y="528" width="480" height="22" class="in"/><text class="cb" x="334" y="543">observation: what the robot sees / measures</text>
-<rect x="574" y="528" width="366" height="22" class="out"/><text class="cb" x="757" y="543">action: what the operator commanded</text>
+<rect x="94" y="528" width="480" height="22" class="in"/><text class="cb" x="334" y="543">observation: cameras + follower joints F1–F5 (measured)</text>
+<rect x="574" y="528" width="366" height="22" class="out"/><text class="cb" x="757" y="543">action: commands L1–L5 (leader arm while recording) + trigger</text>
 <!-- column header -->
 <g class="hd"><rect x="24" y="550" width="70" height="22"/></g>
 <g class="in"><rect x="94" y="550" width="80" height="22"/><rect x="174" y="550" width="80" height="22"/><rect x="254" y="550" width="64" height="22"/><rect x="318" y="550" width="64" height="22"/><rect x="382" y="550" width="64" height="22"/><rect x="446" y="550" width="64" height="22"/><rect x="510" y="550" width="64" height="22"/></g>
 <g class="out"><rect x="574" y="550" width="60" height="22"/><rect x="634" y="550" width="60" height="22"/><rect x="694" y="550" width="60" height="22"/><rect x="754" y="550" width="60" height="22"/><rect x="814" y="550" width="60" height="22"/></g>
 <g class="tr"><rect x="874" y="550" width="66" height="22"/></g>
-<g class="cb"><text x="59" y="565">step</text><text x="134" y="565">front</text><text x="214" y="565">wrist</text><text x="286" y="565">j1</text><text x="350" y="565">j2</text><text x="414" y="565">j3</text><text x="478" y="565">j4</text><text x="542" y="565">j5</text><text x="604" y="565">j1</text><text x="664" y="565">j2</text><text x="724" y="565">j3</text><text x="784" y="565">j4</text><text x="844" y="565">j5</text><text x="907" y="565">trigger</text></g>
+<g class="cb"><text x="59" y="565">step</text><text x="134" y="565">front</text><text x="214" y="565">wrist</text><text x="286" y="565">F1</text><text x="350" y="565">F2</text><text x="414" y="565">F3</text><text x="478" y="565">F4</text><text x="542" y="565">F5</text><text x="604" y="565">L1</text><text x="664" y="565">L2</text><text x="724" y="565">L3</text><text x="784" y="565">L4</text><text x="844" y="565">L5</text><text x="907" y="565">trigger</text></g>
 <!-- data rows -->
 <g fill="#FFFFFF" stroke="#D3D1C7"><rect x="24" y="572" width="916" height="22"/><rect x="24" y="594" width="916" height="22"/><rect x="24" y="616" width="916" height="22"/></g>
 <rect x="874" y="616" width="66" height="22" fill="#FAECE7" stroke="#D85A30"/>
@@ -115,8 +115,8 @@
 </g>
 <text class="s" x="907" y="652" text-anchor="middle">SHOOT pressed</text>
 <!-- legend -->
-<rect x="24" y="672" width="16" height="14" class="in"/><text class="s" x="46" y="684">model input (cameras + 5 joint readings)</text>
-<rect x="290" y="672" width="16" height="14" class="out"/><text class="s" x="312" y="684">model output (5 joint targets)</text>
-<rect x="500" y="672" width="16" height="14" class="tr"/><text class="s" x="522" y="684">model output (trigger)</text>
+<rect x="24" y="672" width="16" height="14" class="in"/><text class="s" x="46" y="684">input: cameras + F1–F5 (follower readings)</text>
+<rect x="290" y="672" width="16" height="14" class="out"/><text class="s" x="312" y="684">output: L1–L5 (joint commands → follower)</text>
+<rect x="590" y="672" width="16" height="14" class="tr"/><text class="s" x="612" y="684">output: trigger</text>
 <text class="s" x="24" y="706">Limits: ≤32 state numbers and ≤32 action numbers per row, 1–16 cameras. We use 5 in, 6 out. Column order (joints, then trigger) is fixed by the training profile.</text>
 </svg>

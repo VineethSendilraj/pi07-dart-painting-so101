@@ -57,8 +57,8 @@ laptop ──USB-C── powered USB hub
   | --- | --- | --- | --- |
   | `system/step` (timestamp) | — | row header, links everything in the row | — |
   | `front_camera`, `wrist_camera` frames | 2 images | observation | yes (input) |
-  | follower joints (measured) | 5 | observation | yes (state input) |
-  | leader joints (commanded) | 5 | action | yes (output) |
+  | follower joints **F1–F5** (measured) | 5 | observation | yes (state input) |
+  | joint commands **L1–L5** (the leader arm while recording; π0.7's output → follower at game time) | 5 | action | yes (output) |
   | trigger (SHOOT button, 0/1) | 1 | action | yes (output) |
 
   There's no "observed gun" column: the blaster has no sensor, so the trigger is action-only.
