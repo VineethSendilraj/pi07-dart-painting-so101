@@ -2,6 +2,8 @@
 
   .venv/bin/python scripts/record.py --follower-port /dev/tty.usbmodemA --leader-port /dev/tty.usbmodemB \\
       --esp32-port /dev/cu.usbserial-0001 --front-cam 0 --wrist-cam 1 --cells A1 B2 C3 --per-cell 10
+  # act-athon rig (fire_ctl firmware + rigd running): one button, releasing it fires
+  .venv/bin/python scripts/record.py --follower-port … --leader-port … --rigd-url http://localhost:8080 …
   .venv/bin/python scripts/record.py --fake --auto --per-cell 1     # no hardware, for testing
 
 Each episode: reset the arm with the leader → SPACE → aim → press SHOOT → the episode ends
@@ -18,7 +20,7 @@ from pathlib import Path
 
 from autobot import schema as s
 from autobot.episode import Step, validate, write_episode
-from autobot.hardware import ESP32, FakeESP32, FakeRig, Rig
+from autobot.hardware import ESP32, FakeESP32, FakeRig, Rig, RigdESP32
 from autobot.keys import keyboard
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,6 +84,7 @@ def main() -> None:
     p.add_argument("--per-cell", type=int, default=10)
     p.add_argument("--operator", default="")
     p.add_argument("--follower-port"), p.add_argument("--leader-port"), p.add_argument("--esp32-port")
+    p.add_argument("--rigd-url", help="use act-athon's rigd instead of --esp32-port (button release = SHOOT)")
     p.add_argument("--follower-id", default="follower"), p.add_argument("--leader-id", default="leader")
     p.add_argument("--front-cam", default="0"), p.add_argument("--wrist-cam", default="1")
     p.add_argument("--fake", action="store_true", help="fake arm, cameras and ESP32")
@@ -94,12 +97,12 @@ def main() -> None:
     if a.fake:
         rig, esp = FakeRig(), FakeESP32(shoot_every=a.fake_shot_every)
     else:
-        if not (a.follower_port and a.leader_port and a.esp32_port):
-            p.error("--follower-port, --leader-port and --esp32-port are required (or use --fake)")
+        if not (a.follower_port and a.leader_port and (a.esp32_port or a.rigd_url)):
+            p.error("--follower-port, --leader-port and --esp32-port or --rigd-url are required (or use --fake)")
         cam = lambda v: int(v) if v.isdigit() else v
         rig = Rig(a.follower_port, {"front_camera": cam(a.front_cam), "wrist_camera": cam(a.wrist_cam)},
                   leader_port=a.leader_port, follower_id=a.follower_id, leader_id=a.leader_id)
-        esp = ESP32(a.esp32_port)
+        esp = RigdESP32(a.rigd_url, mode="train") if a.rigd_url else ESP32(a.esp32_port)
     rig.connect()
 
     schedule = [c for c in a.cells for _ in range(a.per_cell)]

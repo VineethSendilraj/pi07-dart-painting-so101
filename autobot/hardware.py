@@ -9,9 +9,15 @@ ESP32 serial protocol (115200 baud, newline-terminated):
   ESP32 → laptop:  SHOOT    SHOOT button pressed (ESP32 also pulses the relay itself)
                    TURN     DONE button pressed
                    FIRED    relay pulsed in response to F
+
+`RigdESP32` is a drop-in alternative that talks to act-athon's rigd daemon (HTTP) instead of the
+serial port: one operator button (released = SHOOT in train mode, TURN in test mode), the ESP32 runs
+act-athon's `fire_ctl` firmware (heartbeat + arm checks, fires on release). See `docs/hardware.md`.
 """
 
+import json
 import time
+import urllib.request
 
 import numpy as np
 
@@ -79,6 +85,66 @@ class ESP32:
 
     def close(self) -> None:
         self.ser.close()
+
+
+class RigdESP32:
+    """Same interface as `ESP32`, backed by act-athon's rigd (github.com/yuviji/act-athon).
+
+    rigd owns the ESP32's serial port; we talk to it over HTTP. One physical button (GPIO25):
+      mode="train"  releasing it fires the blaster (the firmware does it) and we report "SHOOT"
+      mode="test"   releasing it never fires; we report "TURN" (the human's turn is done)
+    fire() asks rigd for one pulse and reports "FIRED", or "COOLDOWN" / "NO_HEARTBEAT" / "DISARMED".
+    The board only fires while we keep renewing rigd's heartbeat lease, so heartbeat() and events()
+    both renew it (throttled). If this process dies, the board drops to SAFE within ~1.5 s.
+    """
+
+    LEASE_EVERY_S = 0.25   # rigd's lease lasts 1 s
+    BLOCKED = {"cooldown": "COOLDOWN", "no_hb": "NO_HEARTBEAT", "disarmed": "DISARMED"}
+
+    def __init__(self, url: str = "http://localhost:8080", mode: str = "train", timeout: float = 0.3):
+        if mode not in ("train", "test"):
+            raise ValueError("mode must be 'train' or 'test'")
+        self.url, self.mode, self.timeout = url.rstrip("/"), mode, timeout
+        self._pending: list[str] = []
+        self._last_lease = 0.0
+        # The board stores the button mode in flash: always set it explicitly.
+        self._post("/raw", {"cmd": "cfg", "button_fires": mode == "train"})
+        self._releases = int(self._get("/fire_button").get("releases", 0))
+        self._lease(force=True)
+
+    def _get(self, path: str) -> dict:
+        with urllib.request.urlopen(self.url + path, timeout=self.timeout) as r:
+            return json.loads(r.read())
+
+    def _post(self, path: str, body: dict | None = None) -> dict:
+        req = urllib.request.Request(self.url + path, data=json.dumps(body or {}).encode(),
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return json.loads(r.read())
+
+    def _lease(self, force: bool = False) -> None:
+        now = time.monotonic()
+        if force or now - self._last_lease >= self.LEASE_EVERY_S:
+            self._post("/lease")
+            self._last_lease = now
+
+    def events(self) -> list[str]:
+        """Non-blocking-ish (one local HTTP call): events since the last call."""
+        self._lease()
+        releases = int(self._get("/fire_button").get("releases", 0))
+        new, self._releases = max(releases - self._releases, 0), releases
+        out, self._pending = self._pending, []
+        return out + ["SHOOT" if self.mode == "train" else "TURN"] * new
+
+    def heartbeat(self) -> None:
+        self._lease()
+
+    def fire(self) -> None:
+        self._lease(force=True)
+        r = self._post("/fire", {"ms": 150})
+        self._pending.append("FIRED" if r.get("result") == "fired" else self.BLOCKED.get(r.get("reason"), "BLOCKED"))
+
+    def close(self) -> None: ...
 
 
 class FakeRig:

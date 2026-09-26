@@ -20,7 +20,7 @@ import numpy as np
 
 from autobot import schema as s
 from autobot.control import move_to, shoot
-from autobot.hardware import ESP32, FakeESP32, FakeRig, Rig
+from autobot.hardware import ESP32, FakeESP32, FakeRig, Rig, RigdESP32
 from autobot.keys import keyboard
 from autobot.policy import FakePolicy, PiPolicy, gateway_url_for
 
@@ -86,7 +86,8 @@ def connect(a):
     else:
         cam = lambda v: int(v) if v.isdigit() else v
         rig = Rig(a.follower_port, {"front_camera": cam(a.front_cam), "wrist_camera": cam(a.wrist_cam)}, follower_id=a.follower_id)
-        esp = ESP32(a.esp32_port)
+        # act-athon rig: the one button's release means "turn done" (test mode never fires)
+        esp = RigdESP32(a.rigd_url, mode="test") if a.rigd_url else ESP32(a.esp32_port)
         url = a.gateway_url or gateway_url_for(a.finetune)
         print(f"connecting to π0.7 at {url} (first connect can take minutes)…")
         policy = PiPolicy(url, a.chunk)
@@ -133,14 +134,15 @@ def main() -> None:
     p.add_argument("--gateway-url", help="use this checkpoint URL directly")
     p.add_argument("--chunk", type=int, default=10, help="actions played per π0.7 call")
     p.add_argument("--follower-port"), p.add_argument("--esp32-port"), p.add_argument("--follower-id", default="follower")
+    p.add_argument("--rigd-url", help="use act-athon's rigd instead of --esp32-port (button release = TURN)")
     p.add_argument("--front-cam", default="0"), p.add_argument("--wrist-cam", default="1")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("shoot").add_argument("cell", choices=s.CELLS)
     g = sub.add_parser("game")
     g.add_argument("--brain", choices=["claude", "random"], default="claude")
     a = p.parse_args()
-    if not a.fake and not (a.follower_port and a.esp32_port and (a.finetune or a.gateway_url)):
-        p.error("need --follower-port, --esp32-port and --finetune/--gateway-url (or --fake)")
+    if not a.fake and not (a.follower_port and (a.esp32_port or a.rigd_url) and (a.finetune or a.gateway_url)):
+        p.error("need --follower-port, --esp32-port or --rigd-url, and --finetune/--gateway-url (or --fake)")
 
     rig, esp, policy = connect(a)
     _, rest = rig.observe()  # the starting pose is the rest pose

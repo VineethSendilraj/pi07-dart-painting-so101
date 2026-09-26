@@ -84,6 +84,15 @@ The fire trigger is an **SPDT microswitch with a motor brake**, not a simple on/
 - Relay module: bench-test that it **releases at 3.3 V** (active-low 5 V boards may not; use the high-level-trigger jumper and a 10 kΩ pull-down on IN). Power relay VCC from its own 5 V if it has many coils (teammate's 8-channel board draws ~0.6–0.7 A; an MB102 breadboard supply is fine for ≤300 ms pulses).
 - ESP32: keep relay pins off boot-glitch/strapping pins (avoid 0, 1, 3, 5, 6–11, 12, 14, 15; 34–39 are input-only). Set the relay OFF before `pinMode` at boot. Pulse ~150 ms (50–300), cooldown ~500 ms; tune to one dart.
 - ESP32 dev boards with a CP2102 need the Silicon Labs CP210x driver on macOS; appears as `/dev/cu.usbserial-*`. Many USB-C cables are charge-only. If upload hangs: hold BOOT, tap EN.
+
+### Using act-athon's rig (one button, rigd)
+
+The built rig runs act-athon's `fire_ctl` firmware ([github.com/yuviji/act-athon](https://github.com/yuviji/act-athon), `docs/02-hardware/wiring.md`) behind its `rigd` HTTP daemon. Pins: relay IN on **GPIO13** (high-level trigger), one operator button on **GPIO25**, arm jumper on **GPIO26** (left plugged in). **Don't flash this repo's `firmware/` sketch onto that rig**: it drives GPIO26 as the relay output, which is the arm jumper to GND there.
+
+- Start rigd (it owns the ESP32 port): `rigd --port /dev/cu.usbserial-0001` (from act-athon's venv).
+- `record.py --rigd-url http://localhost:8080 …` instead of `--esp32-port`: releasing the button fires (firmware) and is recorded as `SHOOT`.
+- `robot_server.py … --rigd-url http://localhost:8080`: the same button's release means `TURN` (test mode never fires); `fire()` goes through rigd with heartbeat, arm and cooldown checks.
+- `autobot/hardware.py: RigdESP32` sets the button mode on connect (the board remembers it in flash) and renews rigd's heartbeat lease from `events()`/`heartbeat()`, so the board is only live while the script runs.
 - **Heartbeat:** firmware drops to SAFE if the laptop sends nothing for ~500 ms, so a crashed laptop can't leave it live. Teammate's `firmware/fire_ctl/` already implements SAFE → READY → FIRING → COOLDOWN with this.
 
 ### How the trigger fits the model
