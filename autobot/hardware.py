@@ -12,7 +12,8 @@ ESP32 serial protocol (115200 baud, newline-terminated):
 
 `RigdESP32` is a drop-in alternative that talks to act-athon's rigd daemon (HTTP) instead of the
 serial port: one operator button (released = SHOOT in train mode, TURN in test mode), the ESP32 runs
-act-athon's `fire_ctl` MVP firmware (1.1.0: fires on release, train/test images, no arming, no heartbeat). See `docs/hardware.md`.
+act-athon's `fire_ctl` MVP firmware (1.3.0: fires on release, one shot = a 2-pulse burst because only one
+barrel is loaded, train/test images, no arming, no heartbeat). See `docs/hardware.md`.
 """
 
 import json
@@ -93,8 +94,8 @@ class RigdESP32:
     rigd owns the ESP32's serial port; we talk to it over HTTP. One physical button (GPIO25):
       mode="train"  releasing it fires the blaster (the firmware does it) and we report "SHOOT"
       mode="test"   releasing it never fires; we report "TURN" (the human's turn is done)
-    fire() asks rigd for one pulse and reports "FIRED", "COOLDOWN", or "BLOCKED" (e.g. rigd timeout).
-    heartbeat() is a no-op: fire_ctl 1.1.0 and rigd have no heartbeat or lease.
+    fire() asks rigd for one shot (a 2-pulse burst) and reports "FIRED", "COOLDOWN", or "BLOCKED" (e.g. rigd timeout).
+    heartbeat() is a no-op: fire_ctl 1.3.0 and rigd have no heartbeat or lease.
     """
 
     BLOCKED = {"cooldown": "COOLDOWN"}
