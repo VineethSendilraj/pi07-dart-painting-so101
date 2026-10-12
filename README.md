@@ -59,7 +59,7 @@ ds = LeRobotDataset("vineethsendilraj/pi07-dart-painting-so101")
 | `action` | 6 | leader joints (degrees) + `trigger` (1 for the 10 steps after the fire button, else 0) |
 | task | | `"shoot A1"` … `"shoot E5"` |
 
-`meta/blaster_episodes.jsonl` adds per-episode `live` (23 real shots, 93 dry), `board` clutter (`light` / `heavy` / `late`) and `start` pose.
+`meta/blaster_episodes.jsonl` adds per-episode `live` (23 real shots, 93 dry), and `board` clutter (`light` / `heavy` / `late`). Starting positions were randomized across the board, so the 116 takes cover about 89 of the 600 cell-to-cell moves (15%).
 
 **Things to know**
 - **Post-shot tail:** each take keeps recording 2 s after the shot, with the arm on target and `trigger=0`.
@@ -85,7 +85,7 @@ More in [docs/hardware.md](docs/hardware.md), including the [stock trigger wirin
 
 <p><a href="docs/media/teleop.mp4"><img src="docs/media/teleop.gif" width="260" alt="Teleoperating with the leader arm"></a>&nbsp;&nbsp;<img src="docs/img/record-web-done.jpg" width="500" alt="Recording app"></p>
 
-`scripts/record_web.py` is the recording app. It proposes the next cell, board clutter and start pose, and overlays a crosshair on the blaster camera. Press **Record**, aim with the leader arm, press the fire button; the take ends 2 s later and a review panel replays it frame by frame (**Good** keeps it, **Bad** deletes it). Guide: [docs/data-collection.md](docs/data-collection.md).
+`scripts/record_web.py` is the recording app. It proposes the next cell and board clutter, and overlays a crosshair on the blaster camera. Press **Record**, aim with the leader arm, press the fire button; the take ends 2 s later and a review panel replays it frame by frame (**Good** keeps it, **Bad** deletes it). Guide: [docs/data-collection.md](docs/data-collection.md).
 
 ## Training results
 

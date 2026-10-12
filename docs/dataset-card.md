@@ -23,7 +23,7 @@ The arm has no gripper. The blaster sits on a tripod and the arm moves its handl
 - `cell`
 - `live`: 23 takes fired a real dart. The other 93 were dry, with the same motion and the master switch off.
 - `board`: clutter level, `light` / `heavy` / `late`.
-- `start`: `rest`, or the cell the arm started aimed at.
+- `start`: a scheduling label from the recording app. Actual starting positions were randomized across the board, so the takes cover about 89 of the 600 cell-to-cell moves (15%).
 
 ### Things to know
 
