@@ -1,0 +1,14 @@
+{
+  "name": "step1-v1",
+  "run_id": "4366fb5b-211d-4942-a21f-48f3c0d9c982",
+  "created": "2026-09-27T01:21:03.760196",
+  "dataset_paths": [
+    "so101-blaster/v2"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 2000,
+  "batch_size": 256,
+  "contract_id": "01a0de1a-01ee-75e2-bdc1-99d2b695b9c7",
+  "training_profile_id": "2ed9e6c6-26ec-46cf-9001-ffd7b20ef096"
+}

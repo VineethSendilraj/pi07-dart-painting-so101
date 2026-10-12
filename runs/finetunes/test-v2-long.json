@@ -1,0 +1,14 @@
+{
+  "name": "test-v2-long",
+  "run_id": "f096e666-c22e-4f7c-a626-c3267714e808",
+  "created": "2026-09-26T07:55:36.251154",
+  "dataset_paths": [
+    "test/v2-fake-long"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 20,
+  "batch_size": 256,
+  "contract_id": "01a0de1a-01ee-75e2-bdc1-99d2b695b9c7",
+  "training_profile_id": "a7318416-21db-4643-8d4a-dca448628a03"
+}

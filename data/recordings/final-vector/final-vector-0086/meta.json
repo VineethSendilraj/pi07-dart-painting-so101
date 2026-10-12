@@ -1,0 +1,13 @@
+{
+  "episode_id": "final-vector-0086",
+  "task": "shoot A1",
+  "cell": "A1",
+  "recording_start_time": "2026-09-27T07:51:01.297372+00:00",
+  "recording_end_time": "2026-09-27T07:51:09.502383+00:00",
+  "num_steps": 247,
+  "success": true,
+  "operator": "vardhan",
+  "notes": "board=light live=0 start=rest cams=front:0,wrist:1 after_shot_s=2.0 tracked_darts=36 board_action=none",
+  "dataset_path": "so101-blaster/v2",
+  "fake": false
+}

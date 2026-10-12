@@ -1,0 +1,14 @@
+{
+  "name": "test-trainpy-v1",
+  "run_id": "22320c4a-40d0-41ba-a3f6-015180b6d6ba",
+  "created": "2026-09-26T06:52:48.451267",
+  "dataset_paths": [
+    "mock-short/v1"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 20,
+  "batch_size": 256,
+  "contract_id": "01a0dcb7-53fc-7c20-aeda-7dfddc56cfb8",
+  "training_profile_id": "dd7e4e5d-6295-4ca7-9ee0-fa30626afe24"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "logo-v2",
+  "run_id": "6f17e6cb-38fd-415b-bfab-4c6c14e780e8",
+  "created": "2026-09-27T06:26:04.578731",
+  "dataset_paths": [
+    "so101-blaster/v2"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 3800,
+  "batch_size": 256,
+  "contract_id": "01a0de1a-01ee-75e2-bdc1-99d2b695b9c7",
+  "training_profile_id": "2ed9e6c6-26ec-46cf-9001-ffd7b20ef096",
+  "human_only": false,
+  "from_episode": null,
+  "focus_cells": [
+    "A2",
+    "B2",
+    "C2",
+    "D2",
+    "E2",
+    "B3",
+    "B4",
+    "B5",
+    "D3",
+    "D4",
+    "D5"
+  ],
+  "focus_share": 0.5
+}

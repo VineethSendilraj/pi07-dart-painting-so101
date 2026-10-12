@@ -1,0 +1,2 @@
+data/recordings/**/*_camera.mcap filter=lfs diff=lfs merge=lfs -text
+data/recordings/**/light.mcap filter=lfs diff=lfs merge=lfs -text

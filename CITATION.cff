@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this dataset or code, please cite it as below."
+title: "pi07-dart-painting-so101: Teleoperated SO-101 Dart-Aiming Demonstrations"
+type: dataset
+authors:
+  - family-names: Sendilraj
+    given-names: Vineeth
+  - family-names: Agnihotri
+    given-names: Vardhan
+  - family-names: Lakhotia
+    given-names: Yuvraj
+date-released: 2026-10-05
+license: CC-BY-4.0
+url: "https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101"
+repository-code: "https://github.com/VineethSendilraj/pi07-dart-painting-so101"
+keywords:
+  - robotics
+  - imitation learning
+  - vision-language-action
+  - LeRobot
+  - SO-101
+  - pi0.7

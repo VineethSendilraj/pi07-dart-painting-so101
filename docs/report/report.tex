@@ -1,0 +1,112 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parskip}{0.35em}
+
+\title{\textbf{Painting with Darts: A Language-Model Orchestrator\\over a Fine-Tuned $\pi_{0.7}$ Policy on an SO-101 Arm}}
+\author{Vineeth Sendilraj \and Vardhan Agnihotri \and Yuvraj Lakhotia}
+\date{Act-athon 2026 (Actor Labs $\times$ Physical Intelligence) \textperiodcentered{} 3rd place}
+
+\begin{document}
+\maketitle
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[height=3.9cm]{figs/rig.jpg}\hfill
+  \includegraphics[height=3.9cm]{figs/front.jpg}\hfill
+  \includegraphics[height=3.9cm]{figs/wrist.jpg}
+  \caption{Left: the rig. An SO-101 arm drives the handle of a motorized dart blaster on a tripod, aimed at a 5$\times$5 foam board.
+  Middle and right: the two policy cameras at the moment of a \texttt{shoot B4} demonstration. The rear camera sees the arm, the blaster and the board.
+  The wrist camera rides on the blaster; the red crosshair marks where the barrel points.}
+  \label{fig:teaser}
+\end{figure}
+
+\begin{abstract}
+\noindent
+We present a two-level system that draws pictures on a 5$\times$5 grid by firing foam darts from a motorized blaster held by an SO-101 arm.
+A language model acts as the \emph{orchestrator}: given a goal such as ``draw the PI logo'' and photos of the board, Claude plans the order of cells, checks the board after every shot and re-issues shots that missed.
+A vision-language-action (VLA) model acts as the \emph{policy}: $\pi_{0.7}$, fine-tuned on our teleoperation data, maps the instruction \texttt{shoot <cell>}, two camera views and the arm state to 50-step chunks of joint targets plus a trigger channel.
+We collected 116 leader--follower demonstrations (29{,}131 frames at 30\,Hz, 16 minutes) covering 23 of the 25 cells, with varied board clutter and start poses.
+On held-out frames the best fine-tune reaches a validation error of 0.287, and all 24 probed checkpoints aim in column and row order when only the cell in the prompt changes.
+The system completed its live drawing demo. We release the dataset in LeRobot format under CC BY 4.0, with the code, wiring and training logs.
+\end{abstract}
+
+\section{System}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt, align=center, font=\small, inner sep=5pt, minimum height=1.1cm},
+  arr/.style={-{Stealth[length=2.2mm]}, thick},
+  lab/.style={font=\scriptsize, align=center}]
+\node[box, fill=blue!6] (goal) {Goal\\\textit{``draw the PI logo''}};
+\node[box, fill=violet!8, right=0.7cm of goal] (llm) {\textbf{Orchestrator}\\Claude\\plans cells, checks hits};
+\node[box, fill=teal!8, right=1.6cm of llm] (vla) {\textbf{VLA policy}\\$\pi_{0.7}$ (fine-tuned)\\50-step action chunks};
+\node[box, fill=orange!10, right=2.1cm of vla] (robot) {\textbf{Robot}\\SO-101 + blaster\\ESP32 relay};
+\draw[arr] (goal) -- (llm);
+\draw[arr] (llm) -- node[lab, above] {\texttt{shoot(C3)}} (vla);
+\draw[arr] (vla) -- node[lab, above] {joints, trigger} node[lab, below] {speed limit,\\fire rule} (robot);
+\draw[arr] (robot.south) -- ++(0,-0.55) -| node[lab, pos=0.25, below] {two cameras + joint angles @ 30\,Hz} (vla.south);
+\draw[arr] (robot.south) ++(-0.3,0) -- ++(0,-1.05) -| node[lab, pos=0.2, below] {board photos after each shot (hit or miss?)} (llm.south);
+\end{tikzpicture}
+\caption{Two-level control. The orchestrator works at the level of shots (seconds). The VLA policy works at the level of joints (30\,Hz).}
+\label{fig:system}
+\end{figure}
+
+\paragraph{Orchestrator.} Claude receives the goal and two photos: the rear view, which shows which cells already hold darts, and the gun view with its fixed crosshair.
+It returns one tool call per turn (\texttt{shoot(cell)} or \texttt{finish}). After each shot it sees new photos, so a dart that bounced off or landed in the wrong cell is detected and the cell is shot again.
+It avoids the two cells that have no demonstrations.
+
+\paragraph{VLA policy.} $\pi_{0.7}$ receives both 640$\times$480 frames, the five follower joint angles and the prompt \texttt{shoot <cell>}.
+It returns 50 future steps of absolute joint targets and a trigger value. We execute 25 steps per request, limit every joint to $3^\circ$ per step, and fire only when the arm is still and the trigger exceeds 0.5 for three consecutive steps (or the remaining plan holds the aim and contains such a run).
+
+\paragraph{Hardware.} The arm's gripper is replaced by a wire loop through the blaster handle. The blaster's fire microswitch is replaced by a relay driven by an ESP32 (GPIO13), so firing is a single digital output.
+A rocker switch in the battery line is the master power: off gives dry shots with identical motion. Darts carry thumbtack tips so hits stay in the foam.
+Full wiring is in the repository.
+
+\section{Dataset}
+
+Operators aimed the follower with a leader arm and pressed a physical button to fire. A web app proposed the next cell, board clutter and start pose, overlaid the crosshair, and showed each take frame by frame for keep-or-delete review.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Episodes / frames & 116 / 29{,}131 at 30\,Hz (16.2 min); 142--505 steps each \\
+Cells & 23 of 25 (A5, E5 absent); task string \texttt{shoot <cell>} \\
+Observation & rear + wrist RGB (480$\times$640), follower joints (5, degrees) \\
+Action & leader joints (5, degrees) + trigger (1 for 10 steps after the button) \\
+Variation & 23 live shots, 93 dry; board clutter light/heavy/late; start at rest or aimed at another cell \\
+Format & LeRobot v3.0 (parquet + AV1), CC BY 4.0 \\
+\bottomrule
+\end{tabular}
+\caption{Dataset summary. \href{https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}{huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}}
+\end{table}
+
+\section{Training and evaluation}
+
+We fine-tuned $\pi_{0.7}$ with Physical Intelligence's hosted fine-tuning service (13 runs).
+Validation error was lowest after about 30--35 passes over the data; longer runs and a larger batch (512) overfit or did worse.
+The best run, \texttt{full-v2} (3{,}800 steps, about 33.5 passes), reached 0.287.
+In an offline prompt probe we fed the same rig frames and joint state with every \texttt{shoot <cell>} prompt; all 24 checkpoints produced aims ordered by column and row, so the policy follows the language instruction rather than replaying memorized routes.
+
+\section{Limitations}
+
+We did not measure a real-world hit rate; the evidence is offline validation, the prompt probe and the completed live demo.
+Each take records 2\,s after the shot with \texttt{trigger=0}, so on-target frames mostly say ``do not fire''. Offline, the policy rarely produced a clean trigger pulse, which motivated the fire rule above.
+Coverage is uneven (2 demonstrations for row 1, A3 and E3), and the rig geometry is fixed, so the policy is not expected to transfer to a moved board or camera.
+
+\vspace{0.5em}
+\noindent\small Code, wiring and training logs: \href{https://github.com/VineethSendilraj/pi07-dart-painting-so101}{github.com/VineethSendilraj/pi07-dart-painting-so101}.
+Thanks to Actor Labs and Physical Intelligence for the event and API access.
+
+\end{document}

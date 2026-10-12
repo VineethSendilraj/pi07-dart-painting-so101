@@ -1,0 +1,5 @@
+{
+  "x": 0.46,
+  "y": 0.76,
+  "note": "Red plus on the gun image (fractions of width, height), as burned into final-vector 0014+. Approximate (docs/current-state-of-data.md); replace with red_mark_median from scripts/make_trimmed.py's gun_marks.json, or the marker in data/recordings/final-vector/settings.json."
+}

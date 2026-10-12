@@ -1,0 +1,18 @@
+{
+  "name": "noidle-v1",
+  "run_id": "c989214a-3561-46a5-88c1-d5d4c33a7e3a",
+  "created": "2026-09-27T07:20:56.389405",
+  "dataset_paths": [
+    "so101-blaster/v2"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 3000,
+  "batch_size": 256,
+  "contract_id": "01a0de1a-01ee-75e2-bdc1-99d2b695b9c7",
+  "training_profile_id": "a7318416-21db-4643-8d4a-dca448628a03",
+  "human_only": false,
+  "from_episode": null,
+  "focus_cells": null,
+  "focus_share": null
+}

@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.egg-info/
+.DS_Store
+
+# recordings, shards, downloads: large and regenerable
+data/**
+!data/**/
+!data/**/.gitkeep
+*.mcap
+# final-vector recordings: camera video and joint shards in Git LFS, json in git
+!data/recordings/**/*_camera.mcap
+!data/recordings/**/light.mcap
+!data/recordings/**/*.json
+
+# credentials live in ~/.config/pi, never in the repo
+.env
+*service-account*.json
+api_key
+
+# LaTeX build files
+docs/report/*.aux
+docs/report/*.log
+docs/report/*.out

@@ -1,0 +1,18 @@
+{
+  "name": "full-v2",
+  "run_id": "bfcd462a-482e-4390-988b-061f7fd138ea",
+  "created": "2026-09-27T05:33:53.773574",
+  "dataset_paths": [
+    "so101-blaster/v2"
+  ],
+  "base_model": "pi07",
+  "continue_from": null,
+  "num_steps": 3800,
+  "batch_size": 256,
+  "contract_id": "01a0de1a-01ee-75e2-bdc1-99d2b695b9c7",
+  "training_profile_id": "2ed9e6c6-26ec-46cf-9001-ffd7b20ef096",
+  "human_only": false,
+  "from_episode": null,
+  "focus_cells": null,
+  "focus_share": null
+}

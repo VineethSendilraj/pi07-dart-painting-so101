@@ -1,0 +1,8 @@
+[project]
+name = "autobot"
+version = "0.1.0"
+description = "SO-101 dart blaster: Claude picks the cell, a fine-tuned pi0.7 aims and fires (Act-athon 2026)"
+requires-python = ">=3.11"
+
+[tool.setuptools]
+packages = ["autobot"]
