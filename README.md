@@ -1,13 +1,23 @@
-# Painting with Darts
+<h1 align="center">Painting with Darts: A Language-Conditioned<br>Tool-Aiming Dataset for Low-Cost Robot Arms</h1>
 
-**A language-conditioned tool-aiming dataset and π0.7 fine-tune on a low-cost SO-101 arm.**
-Tell the arm `shoot B4` and it aims a motorized dart blaster at that cell and fires. A VLM on top plans the shots to draw pictures.
+<p align="center">
+<a href="https://x.com/VineethSendil">Vineeth Sendilraj</a> &nbsp;·&nbsp;
+<a href="https://x.com/agno_three">Vardhan Agnihotri</a> &nbsp;·&nbsp;
+<a href="https://x.com/yuvrajlakh">Yuvraj Lakhotia</a>
+<br>
+<sub>Act-athon 2026 · Actor Labs × Physical Intelligence · 🥉 3rd place</sub>
+</p>
 
-🥉 3rd place, Actor Labs × Physical Intelligence Act-athon (Sep 2026) · [Vineeth Sendilraj](https://x.com/VineethSendil), [Vardhan Agnihotri](https://x.com/agno_three), [Yuvraj Lakhotia](https://x.com/yuvrajlakh)
-
-**[📄 Paper](docs/report/report.pdf)** · **[🤗 Dataset](https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101)** · **[🎥 Demo thread](https://x.com/agno_three/status/2105353980377546994)** · **[📎 Cite](#citation)**
+<p align="center">
+<a href="docs/report/report.pdf"><b>📄 Paper</b></a> &nbsp;|&nbsp;
+<a href="https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101"><b>🤗 Dataset</b></a> &nbsp;|&nbsp;
+<a href="https://x.com/agno_three/status/2105353980377546994"><b>🎥 Demo</b></a> &nbsp;|&nbsp;
+<a href="#citation"><b>📎 Cite</b></a>
+</p>
 
 <p align="center"><a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" width="270" alt="The rig drawing with darts (click for video with sound)"></a></p>
+
+<p align="center">Tell the arm <code>shoot B4</code> and a fine-tuned <b>π0.7</b> aims a motorized dart blaster at that cell and fires.<br>A VLM on top plans the shots to draw pictures.</p>
 
 <p align="center"><a href="docs/report/report.pdf"><img src="docs/media/writeup-pages.png" width="760" alt="Two-page write-up (click for PDF)"></a><br><sub>Two-page write-up · click for PDF</sub></p>
 
