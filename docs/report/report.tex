@@ -43,35 +43,75 @@ Open robot-learning datasets mostly cover grasping and pick-and-place with a par
 
 \begin{figure}[!ht]
 \centering
-\begin{tikzpicture}
-\node[box] (goal) {Request\\\textit{``draw the PI logo''}};
-\node[box, fill=black!4, right=0.55cm of goal] (llm) {\textbf{Orchestrator (VLM)}\\plans cells,\\checks each shot};
-\node[box, fill=black!4, right=1.75cm of llm] (vla) {\textbf{VLA policy}\\$\pi_{0.7}$, fine-tuned:\\50-step action chunks};
-\node[box, right=2.15cm of vla] (robot) {\textbf{Robot}\\SO-101 arm,\\blaster, relay};
+\begin{tikzpicture}[x=1cm,y=1cm]
+% ---- top row
+\node[box] (goal) at (1.2,0) {Request\\\textit{``draw the PI logo''}};
+\node[box, fill=black!4] (llm) at (4.75,0) {\textbf{Orchestrator (VLM)}\\plans cells,\\checks each shot};
+\node[box, fill=black!4] (vla) at (9.05,0) {\textbf{VLA policy}\\$\pi_{0.7}$, fine-tuned:\\50-step action chunks};
+\node[box] (robot) at (13.35,0) {\textbf{Robot}\\SO-101 arm,\\blaster, relay};
 \draw[arr] (goal) -- (llm);
 \draw[arr] (llm) -- node[lab, above] {\texttt{shoot(C3)}} (vla);
 \draw[arr] (vla) -- node[lab, above] {joint targets,\\trigger} node[lab, below] {speed limit,\\fire rule} (robot);
-\draw[arr] (robot.south) -- ++(0,-0.4) -| node[lab, pos=0.25, below] {2 cameras + 5 joint angles, 30\,Hz} (vla.south);
-\draw[arr] (robot.south) ++(-0.35,0) -- ++(0,-0.95) -| node[lab, pos=0.22, below] {board photos after each shot} (llm.south);
+% ---- board (darts on the PI-logo cells)
+\begin{scope}[shift={(15.35,-0.75)}]
+\draw[black!35] (0,0) grid[step=0.3] (1.5,1.5); \draw (0,0) rectangle (1.5,1.5);
+\foreach \c/\r in {0/1,1/1,2/1,3/1,4/1,1/2,1/3,1/4,3/2,3/3,3/4} \fill (0.15+0.3*\c,1.35-0.3*\r) circle (2.1pt);
+\node[lab] at (0.75,-0.2) {board};
+\end{scope}
+\draw[arr, dashed] (robot.east) -- (15.3,0);
+% ---- feedback loops (above)
+\draw[arr] ([xshift=-4mm]robot.north) -- ++(0,0.45) -| node[lab, pos=0.25, above] {2 cameras + 5 joint angles, every step (30\,Hz)} (vla.north);
+\draw[arr] ([xshift=4mm]robot.north) -- ++(0,1.0) -| node[lab, pos=0.25, above] {rear and wrist photos after each shot: hit, or retry the cell} (llm.north);
+% ---- zoom panel: one policy call
+\draw[black!35, dashed] (vla.south west) -- (2.9,-1.35);
+\draw[black!35, dashed] (vla.south east) -- (16.85,-1.35);
+\draw[rounded corners=3pt, black!50] (2.9,-1.35) rectangle (16.85,-5.55);
+\node[font=\footnotesize\bfseries, anchor=north west] at (3.0,-1.4) {One policy call};
+% inputs
+\node[font=\scriptsize\itshape, anchor=west] at (3.1,-1.95) {inputs};
+\node[inner sep=0pt, anchor=north west] at (3.2,-2.12) {\includegraphics[height=1.15cm]{figs/front.jpg}};
+\node[lab, anchor=north] at (3.97,-3.3) {rear camera};
+\node[inner sep=0pt, anchor=north west] at (4.98,-2.12) {\includegraphics[height=1.15cm]{figs/wrist.jpg}};
+\node[lab, anchor=north] at (5.75,-3.3) {wrist camera};
+\foreach \v [count=\k] in {10.2,$-$42.0,57.1,3.4,0.3} {
+  \draw ({3.2+0.66*(\k-1)},-4.35) rectangle ++(0.66,0.36);
+  \node[font=\tiny] at ({3.53+0.66*(\k-1)},-4.17) {\v};
+}
+\node[lab, anchor=north] at (4.85,-4.38) {state: 5 follower joints ($^\circ$)};
+\node[draw, rounded corners=6pt, font=\scriptsize\ttfamily, inner sep=3pt] (prompt) at (4.85,-5.13) {shoot C3};
+\node[lab, anchor=east] at (prompt.west) {prompt\,};
+% model
+\node[box, fill=black!4, minimum width=2.3cm] (pi) at (8.6,-3.6) {$\pi_{0.7}$\\[1pt]{\scriptsize VLM backbone}\\{\scriptsize + action expert}};
+\draw[arr] (6.75,-2.75) -- ([yshift=4mm]pi.west);
+\draw[arr] (6.6,-4.17) -- ([yshift=-3mm]pi.west);
+\draw[arr] (prompt.east) -| (pi.south);
+% outputs
+\node[font=\scriptsize\itshape, anchor=west] at (10.15,-1.95) {output: action chunk (50 steps, 33\,ms apart)};
+\node[anchor=north west, inner sep=0pt] (tab) at (10.2,-2.15) {\scriptsize\renewcommand{\arraystretch}{0.9}\setlength{\tabcolsep}{3pt}%
+\begin{tabular}{@{}lrrrrrc@{}}
+\toprule
+step & L1 & L2 & L3 & L4 & L5 & trigger \\
+\midrule
+$t{+}1$ & 10.9 & $-$41.2 & 56.4 & 3.2 & 0.3 & 0 \\
+$t{+}2$ & 11.6 & $-$40.3 & 55.7 & 3.0 & 0.3 & 0 \\
+$t{+}3$ & 12.2 & $-$39.5 & 55.1 & 2.9 & 0.2 & 0 \\
+\multicolumn{7}{c}{$\cdots$} \\
+$t{+}8$ & 13.4 & $-$37.9 & 53.9 & 2.7 & 0.2 & \textbf{0.97} \\
+$t{+}9$ & 13.4 & $-$37.9 & 53.9 & 2.7 & 0.2 & \textbf{0.99} \\
+\multicolumn{7}{c}{$\cdots$ to $t{+}50$} \\
+\bottomrule
+\end{tabular}};
+\draw[arr] (pi.east) -- (tab.west |- pi.east);
+\node[lab, anchor=north west, align=left] at (10.2,-4.7) {L1--L5: absolute joint targets; first 25 steps are executed,\\then the policy is queried again with fresh images};
 \end{tikzpicture}
-\caption{System overview. The VLM decides which cell to shoot next and verifies the result from photographs; the fine-tuned $\pi_{0.7}$ policy turns each \texttt{shoot(cell)} command and the live camera stream into joint targets and a trigger at 30\,Hz.}
+\caption{System overview. Top: the VLM decides which cell to shoot next and verifies each result from photographs; the fine-tuned $\pi_{0.7}$ policy turns each \texttt{shoot(cell)} command and the live camera stream into joint targets and a trigger at 30\,Hz. Bottom: one policy call, with real camera frames from a \texttt{shoot B4} demonstration and illustrative joint values.}
 \label{fig:system}
 \end{figure}
 
 \section{Setup}
 
-\begin{figure}[!ht]
-  \centering
-  \includegraphics[height=2.9cm]{figs/rig.jpg}\hspace{4pt}%
-  \includegraphics[height=2.9cm]{figs/front.jpg}\hspace{4pt}%
-  \includegraphics[height=2.9cm]{figs/wrist.jpg}
-  \caption{Left: the rig. Middle and right: the policy's rear and blaster-mounted cameras during a \texttt{shoot B4} demonstration; the red cross marks the barrel axis.}
-  \label{fig:rig}
-\end{figure}
 
-The follower arm's gripper is replaced by a wire loop around the blaster handle, and an ESP32-driven relay replaces the blaster's trigger switch, so firing is a binary action (Fig.~\ref{fig:rig}); Fig.~\ref{fig:system} shows the control loop. The policy observes two 640$\times$480 images (a rear view of the arm and board, and a view from the blaster) and five joint angles at 30\,Hz. It outputs chunks of 50 future steps, each with five absolute joint targets and a trigger value. At inference we execute 25 steps per chunk, limit each joint to $3^\circ$ per step, and fire once the arm is still and the predicted trigger has exceeded 0.5 for three consecutive steps.
-
-Above the policy, a general-purpose VLM receives the requested picture and photographs from both cameras, and issues one \texttt{shoot(cell)} command at a time. After each shot it receives new photographs, so a dart that missed or fell out is detected and the cell is shot again.
+The follower arm's gripper is replaced by a wire loop around the blaster handle, and an ESP32-driven relay replaces the blaster's trigger switch, so firing is a binary action. Fig.~\ref{fig:system} shows the control loop and a single policy call. The policy executes 25 steps of each 50-step chunk before it is queried again; joint speed is capped at $3^\circ$ per step, and the blaster fires once the arm is still and the predicted trigger has exceeded 0.5 for three consecutive steps. Above the policy, a general-purpose VLM issues one \texttt{shoot(cell)} command at a time and re-shoots cells whose dart missed or fell out.
 
 \section{Dataset}
 
@@ -146,7 +186,7 @@ We did not measure a hit rate on the real system; our evidence is validation err
 \setlength{\itemsep}{1pt}
 \bibitem{pi07} Physical Intelligence. $\pi_{0.7}$: A steerable generalist robotic foundation model with emergent capabilities. arXiv:2604.15483, 2026.
 \bibitem{hirobot} L.~X.~Shi, B.~Ichter, M.~Equi, et al. Hi Robot: Open-ended instruction following with hierarchical vision-language-action models. In \emph{ICML}, 2025.
-\bibitem{lerobot} R.~Cadene, S.~Alibert, A.~Soare, et al. LeRobot: State-of-the-art machine learning for real-world robotics in PyTorch. \url{https://github.com/huggingface/lerobot}, 2024.
+\bibitem{lerobot} R.~Cadene, S.~Alibert, A.~Soare, et al. LeRobot: State-of-the-art machine learning for real-world robotics in PyTorch. GitHub, 2024.
 \end{thebibliography}
 
 \end{document}
