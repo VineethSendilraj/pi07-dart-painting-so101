@@ -1,4 +1,4 @@
-116 teleop demos of an **SO-101 arm aiming a motorized dart blaster at a 5×5 board**. Each episode is one shot. The task string is `"shoot <cell>"` (A1 top left … E5 bottom right). We recorded them at the Actor Labs × Physical Intelligence Act-athon (Sep 2026, 3rd place) and fine-tuned **π0.7** on them. Claude picks the cells, the policy aims and fires, and together they draw pictures with darts.
+116 teleop demos of an **SO-101 arm aiming a motorized dart blaster at a 5×5 board**. Each episode is one shot. The task string is `"shoot <cell>"` (A1 top left … E5 bottom right). We recorded them at the Actor Labs × Physical Intelligence Act-athon (Sep 2026, 3rd place) and fine-tuned **π0.7** on them. A vision-language model picks the cells, the policy aims and fires, and together they draw pictures with darts.
 
 - **Code, hardware and wiring:** https://github.com/VineethSendilraj/pi07-dart-painting-so101
 - **Demo video and write-up:** https://x.com/agno_three/status/2105353980377546994

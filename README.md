@@ -2,7 +2,7 @@
 
 <p align="center"><a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" width="270" alt="The rig drawing with darts (click for video with sound)"></a></p>
 
-An SO-101 arm aims a motorized dart blaster and draws pictures with darts. It's a two-level system: **Claude is the orchestrator**, planning which cells to shoot and checking the board after each shot, and a fine-tuned **π0.7** VLA ([Physical Intelligence](https://www.physicalintelligence.company/)) is the policy that aims and fires at each cell at 30 Hz.
+An SO-101 arm aims a motorized dart blaster and draws pictures with darts. It's a two-level system: **a vision-language model (VLM) is the orchestrator**, planning which cells to shoot and checking the board after each shot, and a fine-tuned **π0.7** VLA ([Physical Intelligence](https://www.physicalintelligence.company/)) is the policy that aims and fires at each cell at 30 Hz.
 
 📄 **Write-up:** [*Painting with Darts: A Language-Conditioned Tool-Aiming Dataset for Low-Cost Robot Arms* (PDF)](docs/report/report.pdf)
 
@@ -16,7 +16,7 @@ An SO-101 arm aims a motorized dart blaster and draws pictures with darts. It's 
 
 ![How the VLA works](docs/img/vla.svg)
 
-1. **Orchestrator.** A prompt like `draw the PI logo` and a snapshot of the board go to Claude. Claude picks the next cell and calls `shoot("C3")`. It looks again after each shot and retries any dart that missed or fell off.
+1. **Orchestrator.** A prompt like `draw the PI logo` and a snapshot of the board go to the VLM. It picks the next cell and calls `shoot("C3")`. It looks again after each shot and retries any dart that missed or fell off.
 2. **VLA policy.** π0.7 gets both camera frames, the arm's 5 joint angles and the prompt `shoot C3`. It returns a 50-step plan of joint targets plus a trigger channel.
 3. The laptop plays the plan through a speed limit (≤3° per step). It fires once the arm holds still on target and the trigger crosses the threshold.
 
