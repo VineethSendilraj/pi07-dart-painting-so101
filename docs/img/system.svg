@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="400" viewBox="0 0 980 400" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<title>How the system works: a VLM orchestrator over a fine-tuned π0.7 policy</title>
+<style>
+.h{font-size:15px;font-weight:600;fill:#2C2C2A}.l{font-size:13px;font-weight:600;fill:#2C2C2A;text-anchor:middle}.s{font-size:11px;fill:#5F5E5A;text-anchor:middle}
+.c{font-size:11px;fill:#2C2C2A;text-anchor:middle}.t{font-size:11px;fill:#5F5E5A;font-style:italic;text-anchor:middle}
+.m{font-size:11px;fill:#2C2C2A;font-family:Menlo, Consolas, monospace;text-anchor:middle}
+.un{fill:#F1EFE8;stroke:#B4B2A9}.vlm{fill:#EEEDFE;stroke:#7F77DD}.vla{fill:#E1F5EE;stroke:#1D9E75}.out{fill:#FAEEDA;stroke:#BA7517}
+.ln{fill:none;stroke:#5F5E5A;stroke-width:1.6;marker-end:url(#a)}.fb{fill:none;stroke:#888780;stroke-width:1.4;stroke-dasharray:5 4;marker-end:url(#a)}
+</style>
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="980" height="400" fill="#FFFFFF"/>
+
+<text class="h" x="24" y="38">How it works: a VLM plans the shots, a fine-tuned VLA takes them</text>
+
+<!-- tier labels -->
+<text class="s" x="282" y="104">high level · one decision per shot</text>
+<text class="s" x="558" y="104">low level · 30 Hz</text>
+
+<!-- request -->
+<rect class="un" x="24" y="118" width="128" height="92" rx="10" stroke-width="1.2"/>
+<text class="l" x="88" y="152">Request</text>
+<text class="t" x="88" y="174">“draw the PI logo”</text>
+
+<!-- orchestrator -->
+<rect class="vlm" x="184" y="118" width="196" height="92" rx="10" stroke-width="1.4"/>
+<text class="l" x="282" y="146">Orchestrator (VLM)</text>
+<text class="c" x="282" y="168">plans which cells to shoot</text>
+<text class="c" x="282" y="186">checks each shot from photos</text>
+
+<!-- VLA policy -->
+<rect class="vla" x="450" y="118" width="216" height="92" rx="10" stroke-width="1.4"/>
+<text class="l" x="558" y="146">VLA policy · π0.7 (fine-tuned)</text>
+<text class="c" x="558" y="168">prompt + 2 cameras + 5 joints</text>
+<text class="c" x="558" y="186">→ 50-step joint plan + trigger</text>
+
+<!-- robot -->
+<rect class="out" x="756" y="118" width="140" height="92" rx="10" stroke-width="1.4"/>
+<text class="l" x="826" y="146">Robot</text>
+<text class="c" x="826" y="168">SO-101 arm + blaster</text>
+<text class="c" x="826" y="186">ESP32 relay fires</text>
+
+<!-- board thumbnail with darts on the PI-logo cells -->
+<g transform="translate(910,128)">
+<rect x="0" y="0" width="60" height="60" rx="3" fill="#FAFAF8" stroke="#B4B2A9"/>
+<g stroke="#E3E1DA" stroke-width="1"><path d="M12 0V60M24 0V60M36 0V60M48 0V60M0 12H60M0 24H60M0 36H60M0 48H60"/></g>
+<g fill="#D85A30">
+<circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="30" cy="18" r="3"/><circle cx="42" cy="18" r="3"/><circle cx="54" cy="18" r="3"/>
+<circle cx="18" cy="30" r="3"/><circle cx="18" cy="42" r="3"/><circle cx="18" cy="54" r="3"/>
+<circle cx="42" cy="30" r="3"/><circle cx="42" cy="42" r="3"/><circle cx="42" cy="54" r="3"/>
+</g>
+<text class="s" x="30" y="76">board</text>
+</g>
+
+<!-- forward arrows -->
+<path class="ln" d="M152 164H182"/>
+<path class="ln" d="M380 164H448"/>
+<text class="m" x="414" y="156">shoot(C3)</text>
+<path class="ln" d="M666 164H754"/>
+<text class="c" x="710" y="156">joints + trigger</text>
+<text class="s" x="710" y="180">≤3°/step,</text>
+<text class="s" x="710" y="193">fires when still</text>
+
+<!-- feedback loops -->
+<path class="fb" d="M800 210V250H558V212"/>
+<text class="s" x="679" y="268">2 cameras + 5 joint angles, every step</text>
+<path class="fb" d="M850 210V300H282V212"/>
+<text class="s" x="566" y="318">rear + wrist photos after each shot: hit, or retry the cell</text>
+
+
+<text class="s" x="490" y="372">The VLM decides <tspan font-style="italic">what</tspan> to shoot; π0.7 decides <tspan font-style="italic">how</tspan> to move the arm and when to pull the trigger. Close-up of the policy below.</text>
+</svg>

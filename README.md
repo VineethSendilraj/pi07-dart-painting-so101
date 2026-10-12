@@ -14,11 +14,15 @@ An SO-101 arm aims a motorized dart blaster and draws pictures with darts. It's 
 
 ## How it works
 
-![How the VLA works](docs/img/vla.svg)
+![System overview: a VLM orchestrator over a fine-tuned π0.7 policy](docs/img/system.svg)
 
 1. **Orchestrator.** A prompt like `draw the PI logo` and a snapshot of the board go to the VLM. It picks the next cell and calls `shoot("C3")`. It looks again after each shot and retries any dart that missed or fell off.
 2. **VLA policy.** π0.7 gets both camera frames, the arm's 5 joint angles and the prompt `shoot C3`. It returns a 50-step plan of joint targets plus a trigger channel.
 3. The laptop plays the plan through a speed limit (≤3° per step). It fires once the arm holds still on target and the trigger crosses the threshold.
+
+Close-up of the policy: what π0.7 sees and outputs on every call.
+
+![How the VLA works](docs/img/vla.svg)
 
 ## Rig
 

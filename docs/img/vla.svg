@@ -29,7 +29,7 @@
 <text class="c" x="50" y="222">10.2</text><text class="c" x="102" y="222">-42.0</text><text class="c" x="154" y="222">57.1</text><text class="c" x="206" y="222">3.4</text><text class="c" x="258" y="222">0.3</text>
 <text class="s" x="50" y="246" text-anchor="middle">F1</text><text class="s" x="102" y="246" text-anchor="middle">F2</text><text class="s" x="154" y="246" text-anchor="middle">F3</text><text class="s" x="206" y="246" text-anchor="middle">F4</text><text class="s" x="258" y="246" text-anchor="middle">F5</text>
 
-<text class="l" x="24" y="278">text prompt (from Claude's move)</text>
+<text class="l" x="24" y="278">text prompt (from the VLM's choice)</text>
 <rect x="24" y="286" width="170" height="36" rx="18" fill="#EEEDFE" stroke="#7F77DD"/>
 <text class="l" x="109" y="309" text-anchor="middle">"shoot B2"</text>
 
