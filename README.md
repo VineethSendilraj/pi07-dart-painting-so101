@@ -15,7 +15,9 @@
 <a href="#citation"><b>📎 Cite</b></a>
 </p>
 
-https://github.com/user-attachments/assets/70205265-8de0-4436-aef0-b8fbe62faa97
+<div align="center">
+<video src="https://github.com/user-attachments/assets/70205265-8de0-4436-aef0-b8fbe62faa97" width="360" controls muted></video>
+</div>
 
 <p align="center">Tell the arm <code>shoot B4</code> and a fine-tuned <b>π0.7</b> aims a motorized dart blaster at that cell and fires.<br>A VLM on top plans the shots to draw pictures.</p>
 
