@@ -1,3 +1,5 @@
+
+https://github.com/user-attachments/assets/d74cdb55-7241-443a-80c5-c3b92cb1824a
 <h1 align="center">Painting with Darts: A Language-Conditioned<br>Tool-Aiming Dataset for Low-Cost Robot Arms</h1>
 
 <p align="center">
@@ -15,7 +17,13 @@
 <a href="#citation"><b>📎 Cite</b></a>
 </p>
 
-<p align="center"><a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" width="270" alt="The rig drawing with darts (click for video with sound)"></a></p>
+<!-- <p align="center"><a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" width="270" alt="The rig drawing with darts (click for video with sound)"></a></p> -->
+
+
+
+https://github.com/user-attachments/assets/70205265-8de0-4436-aef0-b8fbe62faa97
+
+
 
 <p align="center">Tell the arm <code>shoot B4</code> and a fine-tuned <b>π0.7</b> aims a motorized dart blaster at that cell and fires.<br>A VLM on top plans the shots to draw pictures.</p>
 
