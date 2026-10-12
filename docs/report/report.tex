@@ -20,10 +20,10 @@
 \renewcommand{\bottomfraction}{0.8}
 \renewcommand{\textfraction}{0.07}
 \renewcommand{\floatpagefraction}{0.8}
-\setlength{\textfloatsep}{10pt plus 2pt}
-\setlength{\intextsep}{8pt plus 2pt}
+\setlength{\textfloatsep}{8pt plus 2pt}
+\setlength{\intextsep}{6pt plus 2pt}
 
-\title{\vspace{-2.2em}\textbf{Painting with Darts: Fine-Tuning $\pi_{0.7}$ for\\Language-Conditioned Aiming on an SO-101 Arm}\thanks{Dataset: \url{https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}. Code, wiring and training logs: \url{https://github.com/VineethSendilraj/pi07-dart-painting-so101}.}}
+\title{\vspace{-2.2em}\textbf{Painting with Darts: A Language-Conditioned\\Tool-Aiming Dataset for Low-Cost Robot Arms}\thanks{Dataset: \url{https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}. Code, wiring and training logs: \url{https://github.com/VineethSendilraj/pi07-dart-painting-so101}.}}
 \author{Vineeth Sendilraj \qquad Vardhan Agnihotri \qquad Yuvraj Lakhotia\\[2pt]
 \small Act-athon 2026, Actor Labs $\times$ Physical Intelligence (3rd place)}
 \date{\vspace{-1.2em}}
@@ -33,19 +33,19 @@
 
 \begin{abstract}
 \noindent
-We fine-tune the $\pi_{0.7}$ vision-language-action model to aim a motorized dart blaster, held by a low-cost SO-101 arm, at any cell of a 5$\times$5 grid given the instruction ``shoot $\langle$cell$\rangle$''. A language model (Claude) sits above the policy: it chooses cells to draw a requested picture, inspects the board after each shot and re-issues shots that miss. The policy is trained on 116 teleoperated demonstrations, 16 minutes of data collected in a single session. Across 13 fine-tuning runs, validation error is lowest after about 33 passes over the data (0.287), and every probed checkpoint aims in the commanded row and column order when only the instruction changes. The system completed its live drawing demonstration. We release the dataset in LeRobot format under CC BY 4.0, together with the code, wiring and fine-tuning logs.
+Open robot-learning datasets are dominated by grasping and pick-and-place. We release a dataset for a different class of skill: aiming a handheld, actuated tool at a language-specified target and triggering it. A low-cost SO-101 arm holds the handle of a motorized dart blaster and aims it at a cell of a 5$\times$5 grid given the instruction ``shoot $\langle$cell$\rangle$''. The dataset contains 116 teleoperated demonstrations (29{,}131 frames, 16 minutes at 30\,Hz) with two camera views, joint states, joint-space actions and a binary trigger channel, covering 23 targets, three levels of scene clutter, 17 start poses, and both live and dry shots. Because it differs from common manipulation data in embodiment, task structure and action space, it is suited as out-of-distribution data in training mixtures for generalist policies and as a small benchmark for language-conditioned precision aiming. Fine-tuning $\pi_{0.7}$ on it across 13 configurations, validation error is lowest after about 33 passes (0.287), and every probed checkpoint aims in the commanded row and column order. Combined with a vision-language model (VLM) that plans targets and verifies hits from images, the policy drew pictures with darts in a live demonstration. The data (LeRobot format, CC BY 4.0), code and wiring are public.
 \end{abstract}
 
 \section{Introduction}
 
-Vision-language-action (VLA) models such as $\pi_{0.7}$~\cite{pi07} can be adapted to a new robot and task with tens of minutes of teleoperated data. A single instruction-following policy does not, however, plan toward a multi-step goal or notice when a step has failed. A common remedy is a hierarchy in which a high-level model chooses the next instruction and a low-level policy executes it~\cite{hirobot}. We built such a system during a weekend hackathon around a task whose outcome is easy to check visually but hard to guarantee: hitting specific cells of a foam grid with darts, in order, to draw a shape.
+Open robot-learning datasets mostly cover grasping and pick-and-place with a parallel gripper. Many practical skills instead involve holding a tool and pointing it, as in spraying, drilling or aiming a nozzle. These differ from grasping in three ways: success depends on the tool's orientation rather than on contact, the effect lands away from the robot, and the action combines continuous motion with a discrete actuation command. We collected a small dataset of this kind, in which an SO-101 arm aims a motorized dart blaster at a language-specified cell and fires it. We fine-tune the $\pi_{0.7}$ vision-language-action model~\cite{pi07} on these data and pair it with a VLM that plans targets and checks hits, a common hierarchy for long-horizon tasks~\cite{hirobot}, to draw pictures with darts.
 
 
 \begin{figure}[!ht]
 \centering
 \begin{tikzpicture}
 \node[box] (goal) {Request\\\textit{``draw the PI logo''}};
-\node[box, fill=black!4, right=0.55cm of goal] (llm) {\textbf{Orchestrator}\\Claude: plans cells,\\checks each shot};
+\node[box, fill=black!4, right=0.55cm of goal] (llm) {\textbf{Orchestrator (VLM)}\\plans cells,\\checks each shot};
 \node[box, fill=black!4, right=1.75cm of llm] (vla) {\textbf{VLA policy}\\$\pi_{0.7}$, fine-tuned:\\50-step action chunks};
 \node[box, right=2.15cm of vla] (robot) {\textbf{Robot}\\SO-101 arm,\\blaster, relay};
 \draw[arr] (goal) -- (llm);
@@ -54,7 +54,7 @@ Vision-language-action (VLA) models such as $\pi_{0.7}$~\cite{pi07} can be adapt
 \draw[arr] (robot.south) -- ++(0,-0.4) -| node[lab, pos=0.25, below] {2 cameras + 5 joint angles, 30\,Hz} (vla.south);
 \draw[arr] (robot.south) ++(-0.35,0) -- ++(0,-0.95) -| node[lab, pos=0.22, below] {board photos after each shot} (llm.south);
 \end{tikzpicture}
-\caption{System overview. Claude decides which cell to shoot next and verifies the result from photographs; the fine-tuned $\pi_{0.7}$ policy turns each \texttt{shoot(cell)} command and the live camera stream into joint targets and a trigger at 30\,Hz.}
+\caption{System overview. The VLM decides which cell to shoot next and verifies the result from photographs; the fine-tuned $\pi_{0.7}$ policy turns each \texttt{shoot(cell)} command and the live camera stream into joint targets and a trigger at 30\,Hz.}
 \label{fig:system}
 \end{figure}
 
@@ -62,20 +62,20 @@ Vision-language-action (VLA) models such as $\pi_{0.7}$~\cite{pi07} can be adapt
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[height=3.25cm]{figs/rig.jpg}\hspace{4pt}%
-  \includegraphics[height=3.25cm]{figs/front.jpg}\hspace{4pt}%
-  \includegraphics[height=3.25cm]{figs/wrist.jpg}
+  \includegraphics[height=2.9cm]{figs/rig.jpg}\hspace{4pt}%
+  \includegraphics[height=2.9cm]{figs/front.jpg}\hspace{4pt}%
+  \includegraphics[height=2.9cm]{figs/wrist.jpg}
   \caption{Left: the rig. Middle and right: the policy's rear and blaster-mounted cameras during a \texttt{shoot B4} demonstration; the red cross marks the barrel axis.}
   \label{fig:rig}
 \end{figure}
 
 The follower arm's gripper is replaced by a wire loop around the blaster handle, and an ESP32-driven relay replaces the blaster's trigger switch, so firing is a binary action (Fig.~\ref{fig:rig}); Fig.~\ref{fig:system} shows the control loop. The policy observes two 640$\times$480 images (a rear view of the arm and board, and a view from the blaster) and five joint angles at 30\,Hz. It outputs chunks of 50 future steps, each with five absolute joint targets and a trigger value. At inference we execute 25 steps per chunk, limit each joint to $3^\circ$ per step, and fire once the arm is still and the predicted trigger has exceeded 0.5 for three consecutive steps.
 
-Above the policy, Claude receives the requested picture and photographs from both cameras, and issues one \texttt{shoot(cell)} command at a time. After each shot it receives new photographs, so a dart that missed or fell out is detected and the cell is shot again.
+Above the policy, a general-purpose VLM receives the requested picture and photographs from both cameras, and issues one \texttt{shoot(cell)} command at a time. After each shot it receives new photographs, so a dart that missed or fell out is detected and the cell is shot again.
 
 \section{Dataset}
 
-An operator aimed the follower with a leader arm and fired with a physical button. A web application proposed the next cell, board clutter and start pose, and replayed each take frame by frame so that it could be kept or discarded (Fig.~\ref{fig:pipeline}). The 116 kept demonstrations contain 29{,}131 frames at 30\,Hz (16.2 minutes) and cover 23 of the 25 cells, with A5 and E5 absent. Each frame holds the rear and wrist images, five follower joint angles, and an action of five leader joint angles plus a trigger that is 1 for the 10 steps after the button press. The set mixes 23 live and 93 dry shots, three levels of board clutter and 17 start poses, and is released in LeRobot v3.0 format~\cite{lerobot} under CC BY 4.0.
+An operator aimed the follower with a leader arm and fired with a physical button, while a web application proposed the next cell, board clutter and start pose and replayed each take for keep-or-discard review (Fig.~\ref{fig:pipeline}). Each kept frame holds both images, five follower joint angles, and an action of five leader joint angles plus a trigger that is 1 for the 10 steps after the button press. A5 and E5 were not recorded.
 
 \begin{figure}[!ht]
 \centering
@@ -86,7 +86,7 @@ An operator aimed the follower with a leader arm and fired with a physical butto
 \node[box, fill=black!4, right=0.45cm of eps] (ft) {\textbf{Fine-tuning}\\PI hosted service,\\13 runs};
 \node[box, right=0.45cm of ft] (ckpt) {\textbf{Hosted checkpoint}\\best run by\\validation error};
 \node[box, right=0.45cm of ckpt] (inf) {\textbf{Robot}\\closed-loop\\inference};
-\node[box, below=0.35cm of eps] (hf) {\textbf{Public release}\\LeRobot v3.0 on\\Hugging Face};
+\node[lab, below=0.22cm of eps] (hf) {public release: LeRobot v3.0 on Hugging Face};
 \draw[arr] (tele) -- (rec); \draw[arr] (rec) -- (eps); \draw[arr] (eps) -- (ft);
 \draw[arr] (ft) -- (ckpt); \draw[arr] (ckpt) -- (inf); \draw[arr] (eps) -- (hf);
 \end{tikzpicture}
