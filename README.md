@@ -4,7 +4,7 @@
 
 An SO-101 arm aims a motorized dart blaster and draws pictures with darts. It's a two-level system: **Claude is the orchestrator**, planning which cells to shoot and checking the board after each shot, and a fine-tuned **π0.7** VLA ([Physical Intelligence](https://www.physicalintelligence.company/)) is the policy that aims and fires at each cell at 30 Hz.
 
-📄 **Write-up:** [one-page write-up (PDF)](docs/report/report.pdf)
+📄 **Write-up:** [write-up (PDF)](docs/report/report.pdf)
 
 🥉 **3rd place, Actor Labs × Physical Intelligence Act-athon** (Mountain View, Sep 25–27, 2026). Built by [Vineeth Sendilraj](https://x.com/VineethSendil), [Vardhan Agnihotri](https://x.com/agno_three) and [Yuvraj Lakhotia](https://x.com/yuvrajlakh). Demo video and write-up: [thread on X](https://x.com/agno_three/status/2105353980377546994).
 

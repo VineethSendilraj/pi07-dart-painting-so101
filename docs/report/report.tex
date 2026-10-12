@@ -1,5 +1,5 @@
-\documentclass[9pt,twocolumn,letterpaper]{extarticle}
-\usepackage[top=0.55in,bottom=0.55in,left=0.6in,right=0.6in,columnsep=0.22in]{geometry}
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.75in,bottom=0.8in,left=0.9in,right=0.9in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{times}
 \renewcommand{\ttdefault}{lmtt}
@@ -7,114 +7,146 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[hidelinks]{hyperref}
-\usepackage[font=footnotesize,labelsep=period,skip=3pt]{caption}
+\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
 \usepackage{titlesec}
-\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\tikzset{box/.style={draw,rounded corners=2pt,align=center,font=\footnotesize,inner sep=4pt,minimum height=0.95cm},arr/.style={-{Stealth[length=1.8mm]},semithick},lab/.style={font=\scriptsize,align=center}}
 
-\titleformat{\section}{\normalsize\bfseries}{}{0em}{}
-\titlespacing*{\section}{0pt}{0.9ex}{0.4ex}
-\captionsetup[figure]{name=Fig.}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.45ex}
-\setlist{nosep,leftmargin=1.1em}
-\pagestyle{empty}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.6ex plus .3ex}{0.8ex}
+\setlength{\parskip}{0.3ex}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\setlength{\textfloatsep}{10pt plus 2pt}
+\setlength{\intextsep}{8pt plus 2pt}
+
+\title{\vspace{-2.2em}\textbf{Painting with Darts: Fine-Tuning $\pi_{0.7}$ for\\Language-Conditioned Aiming on an SO-101 Arm}\thanks{Dataset: \url{https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}. Code, wiring and training logs: \url{https://github.com/VineethSendilraj/pi07-dart-painting-so101}.}}
+\author{Vineeth Sendilraj \qquad Vardhan Agnihotri \qquad Yuvraj Lakhotia\\[2pt]
+\small Act-athon 2026, Actor Labs $\times$ Physical Intelligence (3rd place)}
+\date{\vspace{-1.2em}}
 
 \begin{document}
+\maketitle
 
-\twocolumn[{%
-\begin{center}
-{\Large\bfseries Painting with Darts: Fine-Tuning $\pi_{0.7}$ for Language-Conditioned Aiming on an SO-101\par}
-\vspace{0.5em}
-{Vineeth Sendilraj \quad Vardhan Agnihotri \quad Yuvraj Lakhotia\par}
-\vspace{0.15em}
-{\small Act-athon 2026 (Actor Labs $\times$ Physical Intelligence), 3rd place \quad\textperiodcentered\quad
-\href{https://huggingface.co/datasets/vineethsendilraj/pi07-dart-painting-so101}{\texttt{hf.co/datasets/vineethsendilraj/pi07-dart-painting-so101}}\par}
-\vspace{0.9em}
-\end{center}
-}]
+\begin{abstract}
+\noindent
+We fine-tune the $\pi_{0.7}$ vision-language-action model to aim a motorized dart blaster, held by a low-cost SO-101 arm, at any cell of a 5$\times$5 grid given the instruction ``shoot $\langle$cell$\rangle$''. A language model (Claude) sits above the policy: it chooses cells to draw a requested picture, inspects the board after each shot and re-issues shots that miss. The policy is trained on 116 teleoperated demonstrations, 16 minutes of data collected in a single session. Across 13 fine-tuning runs, validation error is lowest after about 33 passes over the data (0.287), and every probed checkpoint aims in the commanded row and column order when only the instruction changes. The system completed its live drawing demonstration. We release the dataset in LeRobot format under CC BY 4.0, together with the code, wiring and fine-tuning logs.
+\end{abstract}
 
-\textbf{Summary.} We fine-tune $\pi_{0.7}$~\cite{pi07} to aim a motorized dart blaster held by an SO-101 arm at any cell of a 5$\times$5 grid, given the instruction \texttt{shoot $\langle$cell$\rangle$}. A language model (Claude) sits above the policy, as in hierarchical VLA systems~\cite{hirobot}: it chooses cells to draw a picture, checks the board after each shot and re-issues misses. The policy is trained on 116 teleoperated demonstrations (16 minutes) collected in one session. We release the data in LeRobot format~\cite{lerobot}, with the code, wiring and all fine-tuning logs.
+\section{Introduction}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\columnwidth]{figs/rig.jpg}\\[2pt]
-  \includegraphics[width=0.493\columnwidth]{figs/front.jpg}\hfill
-  \includegraphics[width=0.493\columnwidth]{figs/wrist.jpg}
-  \caption{Top: the rig. Bottom: the two policy views during a \texttt{shoot B4} demonstration, rear camera (left) and blaster-mounted camera with the barrel cross (right).}
-  \label{fig:rig}
+Vision-language-action (VLA) models such as $\pi_{0.7}$~\cite{pi07} can be adapted to a new robot and task with tens of minutes of teleoperated data. A single instruction-following policy does not, however, plan toward a multi-step goal or notice when a step has failed. A common remedy is a hierarchy in which a high-level model chooses the next instruction and a low-level policy executes it~\cite{hirobot}. We built such a system during a weekend hackathon around a task whose outcome is easy to check visually but hard to guarantee: hitting specific cells of a foam grid with darts, in order, to draw a shape.
+
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\node[box] (goal) {Request\\\textit{``draw the PI logo''}};
+\node[box, fill=black!4, right=0.55cm of goal] (llm) {\textbf{Orchestrator}\\Claude: plans cells,\\checks each shot};
+\node[box, fill=black!4, right=1.75cm of llm] (vla) {\textbf{VLA policy}\\$\pi_{0.7}$, fine-tuned:\\50-step action chunks};
+\node[box, right=2.15cm of vla] (robot) {\textbf{Robot}\\SO-101 arm,\\blaster, relay};
+\draw[arr] (goal) -- (llm);
+\draw[arr] (llm) -- node[lab, above] {\texttt{shoot(C3)}} (vla);
+\draw[arr] (vla) -- node[lab, above] {joint targets,\\trigger} node[lab, below] {speed limit,\\fire rule} (robot);
+\draw[arr] (robot.south) -- ++(0,-0.4) -| node[lab, pos=0.25, below] {2 cameras + 5 joint angles, 30\,Hz} (vla.south);
+\draw[arr] (robot.south) ++(-0.35,0) -- ++(0,-0.95) -| node[lab, pos=0.22, below] {board photos after each shot} (llm.south);
+\end{tikzpicture}
+\caption{System overview. Claude decides which cell to shoot next and verifies the result from photographs; the fine-tuned $\pi_{0.7}$ policy turns each \texttt{shoot(cell)} command and the live camera stream into joint targets and a trigger at 30\,Hz.}
+\label{fig:system}
 \end{figure}
 
 \section{Setup}
-The gripper is replaced by a wire loop around the blaster handle, and an ESP32-driven relay replaces the trigger switch, so firing is a binary action. Observations are two 640$\times$480 images and five joint angles at 30\,Hz; actions are five leader-arm joint targets and the trigger. At inference we execute 25 steps of each 50-step chunk, cap joint speed at $3^\circ$ per step, and fire once the arm is still and the predicted trigger exceeds 0.5 for three steps.
 
-\section{Data}
-\begin{center}\footnotesize
-\begin{tabular}{@{}ll@{}}
-\toprule
-Demonstrations & 116 (29{,}131 frames, 16.2 min) \\
-Cells & 23 of 25 (A5, E5 absent) \\
-Trigger label & 1 for 10 steps after the button, else 0 \\
-Variation & 23 live / 93 dry shots, 3 clutter levels, 17 start poses \\
-Format & LeRobot v3.0, CC BY 4.0 \\
-\bottomrule
-\end{tabular}
-\end{center}
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[height=3.25cm]{figs/rig.jpg}\hspace{4pt}%
+  \includegraphics[height=3.25cm]{figs/front.jpg}\hspace{4pt}%
+  \includegraphics[height=3.25cm]{figs/wrist.jpg}
+  \caption{Left: the rig. Middle and right: the policy's rear and blaster-mounted cameras during a \texttt{shoot B4} demonstration; the red cross marks the barrel axis.}
+  \label{fig:rig}
+\end{figure}
 
-\section{Training}
-We ran 13 fine-tunes on Physical Intelligence's hosted service, varying schedule, batch size, data mixture and base checkpoint (Table~\ref{tab:runs}).
+The follower arm's gripper is replaced by a wire loop around the blaster handle, and an ESP32-driven relay replaces the blaster's trigger switch, so firing is a binary action (Fig.~\ref{fig:rig}); Fig.~\ref{fig:system} shows the control loop. The policy observes two 640$\times$480 images (a rear view of the arm and board, and a view from the blaster) and five joint angles at 30\,Hz. It outputs chunks of 50 future steps, each with five absolute joint targets and a trigger value. At inference we execute 25 steps per chunk, limit each joint to $3^\circ$ per step, and fire once the arm is still and the predicted trigger has exceeded 0.5 for three consecutive steps.
 
-\begin{table}[h]
-\centering\footnotesize
-\caption{Validation error by run. Std.: standard base; Alt.: alternative base offered by the service.}
+Above the policy, Claude receives the requested picture and photographs from both cameras, and issues one \texttt{shoot(cell)} command at a time. After each shot it receives new photographs, so a dart that missed or fell out is detected and the cell is shot again.
+
+\section{Dataset}
+
+An operator aimed the follower with a leader arm and fired with a physical button. A web application proposed the next cell, board clutter and start pose, and replayed each take frame by frame so that it could be kept or discarded (Fig.~\ref{fig:pipeline}). The 116 kept demonstrations contain 29{,}131 frames at 30\,Hz (16.2 minutes) and cover 23 of the 25 cells, with A5 and E5 absent. Each frame holds the rear and wrist images, five follower joint angles, and an action of five leader joint angles plus a trigger that is 1 for the 10 steps after the button press. The set mixes 23 live and 93 dry shots, three levels of board clutter and 17 start poses, and is released in LeRobot v3.0 format~\cite{lerobot} under CC BY 4.0.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\node[box] (tele) {\textbf{Teleoperation}\\leader arm,\\fire button};
+\node[box, right=0.45cm of tele] (rec) {\textbf{Recording app}\\30\,Hz capture,\\keep/discard review};
+\node[box, right=0.45cm of rec] (eps) {\textbf{116 episodes}\\cameras, joints,\\trigger label};
+\node[box, fill=black!4, right=0.45cm of eps] (ft) {\textbf{Fine-tuning}\\PI hosted service,\\13 runs};
+\node[box, right=0.45cm of ft] (ckpt) {\textbf{Hosted checkpoint}\\best run by\\validation error};
+\node[box, right=0.45cm of ckpt] (inf) {\textbf{Robot}\\closed-loop\\inference};
+\node[box, below=0.35cm of eps] (hf) {\textbf{Public release}\\LeRobot v3.0 on\\Hugging Face};
+\draw[arr] (tele) -- (rec); \draw[arr] (rec) -- (eps); \draw[arr] (eps) -- (ft);
+\draw[arr] (ft) -- (ckpt); \draw[arr] (ckpt) -- (inf); \draw[arr] (eps) -- (hf);
+\end{tikzpicture}
+\caption{Data and training pipeline. The same episodes are exported to LeRobot format for public release.}
+\label{fig:pipeline}
+\end{figure}
+
+\section{Training and Results}
+
+We ran 13 fine-tuning jobs on Physical Intelligence's hosted service, varying the training schedule, batch size, data mixture and base checkpoint (Table~\ref{tab:runs}). The training schedule mattered most: validation error was lowest after about 33 passes over the data on the standard base checkpoint and about 18 passes on an alternative base, and longer training overfit. A larger batch and oversampling the cells of the PI logo did not help, and training only on the 101 takes recorded with the final crosshair overlay was no better than using all 116. The run with the lowest error on the standard base was used for the live demonstration.
+
+\begin{table}[!ht]
+\centering\footnotesize\renewcommand{\arraystretch}{0.95}
+\caption{Validation error of all 13 fine-tuning runs (best checkpoint per run), by base checkpoint.}
 \label{tab:runs}
-\begin{tabular}{@{}llcc@{}}
+\begin{tabular}{@{}lcc@{}}
+\multicolumn{3}{c}{\textit{Standard base}}\\
 \toprule
-Run & Base & Passes & Val.\ error \\
+Change from baseline & Passes & Val.\ error \\
 \midrule
-Baseline & Std. & 26.5 & 0.298 \\
-\textbf{Longer schedule (demo)} & Std. & 33.5 & \textbf{0.287} \\
-Much longer & Std. & 48.5 & 0.303 \\
-Batch 512 & Std. & 48.5 & 0.334 \\
-Logo cells oversampled & Std. & 33.5 & 0.333 \\
-Final-crosshair takes only & Std. & $\sim$47 & 0.325$^\dagger$ \\
-Still frames dropped & Std. & 26.5 & 0.421$^\ddagger$ \\
-\midrule
-Baseline & Alt. & 26.5 & 0.294 \\
-Shorter schedule & Alt. & 17.6 & 0.294 \\
-Logo cells oversampled & Alt. & 17.6 & 0.281$^\S$ \\
-Final-crosshair takes only & Alt. & $\sim$47 & 0.294$^\dagger$ \\
-Still frames dropped & Alt. & 17.6 & 0.375$^\ddagger$ \\
-Logo + still dropped & Alt. & 17.6 & 0.444$^\ddagger$ \\
+None (baseline) & 26.5 & 0.298 \\
+\textbf{Longer schedule (demo)} & 33.5 & \textbf{0.287} \\
+Much longer schedule & 48.5 & 0.303 \\
+Batch size 512 & 48.5 & 0.334 \\
+Logo cells oversampled & 33.5 & 0.333 \\
+Final-crosshair takes only & $\sim$47 & 0.325$^{a}$ \\
+Still frames dropped & 26.5 & 0.421$^{b}$ \\
 \bottomrule
-\end{tabular}
-
-\vspace{2pt}
-\parbox{\columnwidth}{\scriptsize Best checkpoint per run. $^\dagger$Validated on a 101-take subset. $^\ddagger$Validated on moving frames only. $^\S$Validation split likely over-represents the logo cells.}
+\end{tabular}\hspace{1.2em}%
+\begin{tabular}{@{}lcc@{}}
+\multicolumn{3}{c}{\textit{Alternative base}}\\
+\toprule
+Change from baseline & Passes & Val.\ error \\
+\midrule
+None & 26.5 & 0.294 \\
+Shorter schedule & 17.6 & 0.294 \\
+Logo cells oversampled & 17.6 & 0.281$^{c}$ \\
+Final-crosshair takes only & $\sim$47 & 0.294$^{a}$ \\
+Still frames dropped & 17.6 & 0.375$^{b}$ \\
+Logo + still frames dropped & 17.6 & 0.444$^{b}$ \\
+\addlinespace[1.05em]
+\bottomrule
+\end{tabular}\\[3pt]
+\parbox{0.92\textwidth}{\footnotesize $^{a}$Validated on the 101-take subset. $^{b}$Validated on moving frames only. $^{c}$The validation split likely over-represents the logo cells. Scores marked $a$--$c$ are not directly comparable with the others.}
 \end{table}
 
-\section{Findings}
-\begin{itemize}
-\item \textbf{Schedule matters most.} Error is lowest at about 33 passes on the standard base and 18 on the alternative base; longer training overfits.
-\item \textbf{More data beat cleaner data.} Dropping the 15 takes recorded before the final crosshair did not help.
-\item \textbf{Batch size and oversampling did not help} on the standard base.
-\item \textbf{The policy follows the instruction.} With images and joint state held fixed and only the prompt's cell changed, all 24 probed checkpoints aimed in column and row order.
-\item \textbf{The trigger is the weak point.} Each take continues 2\,s after the shot with the trigger at 0, so the policy rarely emitted a clean pulse offline; the stillness rule above compensates.
-\end{itemize}
+To test whether the policy uses the instruction, we gave each checkpoint the same images and joint state while changing only the cell in the prompt. All 24 probed checkpoints produced aims ordered by column and row, so the policy follows the instruction rather than replaying a fixed motion.
 
 \section{Limitations}
-We did not measure a real-world hit rate; evidence is validation error, the prompt probe and a successful live demonstration. Camera and board positions were fixed, and coverage is uneven (two takes each for row 1, A3 and E3).
 
-\vspace{0.3em}
-{\footnotesize
-\textbf{Code and wiring:} \href{https://github.com/VineethSendilraj/pi07-dart-painting-so101}{\texttt{github.com/VineethSendilraj/pi07-dart-painting-so101}}
+We did not measure a hit rate on the real system; our evidence is validation error, the prompt probe and the live demonstration. Because each demonstration continues for 2\,s after the shot with the trigger at 0, the policy rarely produced a clean trigger pulse offline; the stillness rule in Section~2 compensates. Coverage is uneven (two demonstrations each for row~1, A3 and E3), and the camera and board positions were fixed throughout.
 
-\vspace{0.3em}
-\renewcommand{\refname}{\vspace{-1.6em}}
+
+\footnotesize\raggedright
+\renewcommand{\refname}{\normalsize References}
 \begin{thebibliography}{3}
-\setlength{\itemsep}{0pt}
+\setlength{\itemsep}{1pt}
 \bibitem{pi07} Physical Intelligence. $\pi_{0.7}$: A steerable generalist robotic foundation model with emergent capabilities. arXiv:2604.15483, 2026.
-\bibitem{hirobot} L.~X.~Shi, B.~Ichter, M.~Equi, \emph{et al.} Hi Robot: Open-ended instruction following with hierarchical vision-language-action models. ICML, 2025.
-\bibitem{lerobot} R.~Cadene, S.~Alibert, A.~Soare, \emph{et al.} LeRobot: State-of-the-art machine learning for real-world robotics in PyTorch. \url{https://github.com/huggingface/lerobot}, 2024.
-\end{thebibliography}}
+\bibitem{hirobot} L.~X.~Shi, B.~Ichter, M.~Equi, et al. Hi Robot: Open-ended instruction following with hierarchical vision-language-action models. In \emph{ICML}, 2025.
+\bibitem{lerobot} R.~Cadene, S.~Alibert, A.~Soare, et al. LeRobot: State-of-the-art machine learning for real-world robotics in PyTorch. \url{https://github.com/huggingface/lerobot}, 2024.
+\end{thebibliography}
 
 \end{document}
