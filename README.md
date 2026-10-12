@@ -9,6 +9,8 @@ Tell the arm `shoot B4` and it aims a motorized dart blaster at that cell and fi
 
 <p align="center"><a href="docs/media/demo.mp4"><img src="docs/media/demo.gif" width="270" alt="The rig drawing with darts (click for video with sound)"></a></p>
 
+<p align="center"><a href="docs/report/report.pdf"><img src="docs/media/writeup-pages.png" width="760" alt="Two-page write-up (click for PDF)"></a><br><sub>Two-page write-up · click for PDF</sub></p>
+
 ## Contents
 
 - [How it works](#how-it-works)
@@ -27,10 +29,6 @@ Tell the arm `shoot B4` and it aims a motorized dart blaster at that cell and fi
 1. **Orchestrator (VLM).** Given a request like `draw the PI logo` and a photo of the board, it picks the next cell and calls `shoot("C3")`. After each shot it looks again and retries any dart that missed or fell off.
 2. **VLA policy (π0.7, fine-tuned).** Gets both camera frames, the arm's 5 joint angles and the prompt `shoot C3`. Returns a 50-step plan of joint targets plus a trigger channel.
 3. **Execution.** The laptop plays the plan through a speed limit (≤3° per step) and fires once the arm holds still on target and the trigger crosses 0.5.
-
-The [paper](docs/report/report.pdf) has the full write-up:
-
-<p align="center"><a href="docs/report/report.pdf"><img src="docs/media/writeup-pages.png" width="720" alt="Two-page write-up (click for PDF)"></a></p>
 
 ## Dataset
 
