@@ -119,7 +119,7 @@ Format, license & LeRobot v3.0, CC BY 4.0 \\
 
 \section{Training and Evaluation}
 
-We fine-tuned $\pi_{0.7}$ through Physical Intelligence's hosted fine-tuning service, running 13 jobs that varied the number of steps, batch size, data mixture and base checkpoint. Table~\ref{tab:runs} lists the runs that used the base model on the full dataset. Validation error was lowest after roughly 30--35 passes over the data and increased with longer training; a larger batch did not help, nor did oversampling the cells of the PI logo.
+We fine-tuned $\pi_{0.7}$ through Physical Intelligence's hosted fine-tuning service, running 13 jobs that varied the number of steps, batch size, data mixture and base checkpoint. Table~\ref{tab:runs} lists the directly comparable runs, which used the standard base checkpoint on the full dataset; all 13 runs appear in Table~\ref{tab:allruns} in the appendix. Validation error was lowest after roughly 30--35 passes over the data and increased with longer training; a larger batch did not help, nor did oversampling the cells of the PI logo. An alternative base checkpoint offered by the service (``cosmic'') peaked earlier, at about 18 passes, and reached similar error. Keeping every demonstration was better than training only on the 101 takes recorded with the final crosshair.
 
 \begin{table}[h]
 \centering
@@ -139,7 +139,37 @@ Logo cells oversampled & 3{,}800 & 33.5 & 0.333 \\
 \end{tabular}
 \end{table}
 
-To check that the policy uses the instruction, we fed every checkpoint the same rig images and joint state while changing only the cell in the prompt, and compared the final aim of each predicted chunk. All 24 checkpoints produced aims ordered by column and row, so the policy follows the language command rather than replaying a fixed motion. The checkpoint with the lowest validation error was used for the live demonstration, in which the system drew its target picture.
+To check that the policy uses the instruction, we fed every checkpoint the same rig images and joint state while changing only the cell in the prompt, and compared the final aim of each predicted chunk. All 24 checkpoints produced aims ordered by column and row, so the policy follows the language command rather than replaying a fixed motion. We used the best run in Table~\ref{tab:runs} for the live demonstration, in which the system drew its target picture.
+
+\begin{table*}[t]
+\centering
+\caption{All fine-tuning runs}
+\label{tab:allruns}
+\footnotesize
+\begin{tabular}{@{}lllccl@{}}
+\toprule
+Run & Base & Change from baseline & Steps (passes) & Val.\ error (step) & Note \\
+\midrule
+full-v1 & $\pi_{0.7}$ & none (baseline) & 3{,}000 (26.5) & 0.298 (2{,}999) & \\
+\textbf{full-v2} & $\pi_{0.7}$ & longer schedule & 3{,}800 (33.5) & \textbf{0.287} (3{,}799) & used in the live demonstration \\
+full-long-v1 & $\pi_{0.7}$ & much longer schedule & 5{,}500 (48.5) & 0.303 (4{,}000) & overfits after $\sim$35 passes \\
+full-long-b512-v1 & $\pi_{0.7}$ & batch 512 & 2{,}750 (48.5) & 0.334 (2{,}749) & \\
+logo-v2 & $\pi_{0.7}$ & 50\% of each batch from the 11 logo cells & 3{,}800 (33.5) & 0.333 (3{,}799) & \\
+redmark-v1 & $\pi_{0.7}$ & only the 101 takes with the final crosshair & 4{,}600 ($\sim$47) & 0.325 (4{,}000)$^\dagger$ & \\
+noidle-v1 & $\pi_{0.7}$ & still frames dropped from training & 3{,}000 (26.5) & 0.421 (2{,}999)$^\ddagger$ & \\
+\midrule
+full-cosmic-v1 & cosmic & none & 3{,}000 (26.5) & 0.294 (2{,}000) & \\
+full-cosmic-2k-v1 & cosmic & shorter schedule & 2{,}000 (17.6) & 0.294 (1{,}999) & \\
+logo-cosmic-v1 & cosmic & 50\% of each batch from the 11 logo cells & 2{,}000 (17.6) & 0.281 (1{,}999)$^\S$ & only clean offline trigger pulse \\
+redmark-cosmic-v1 & cosmic & only the 101 takes with the final crosshair & 4{,}600 ($\sim$47) & 0.294 (2{,}000)$^\dagger$ & \\
+noidle-cosmic-v1 & cosmic & still frames dropped from training & 2{,}000 (17.6) & 0.375 (1{,}999)$^\ddagger$ & \\
+logo-noidle-cosmic-v1 & cosmic & logo oversampling and still frames dropped & 2{,}000 (17.6) & 0.444 (1{,}999)$^\ddagger$ & \\
+\bottomrule
+\end{tabular}
+
+\vspace{3pt}
+\parbox{0.95\textwidth}{\footnotesize $^\dagger$Validated on the 101-take subset. $^\ddagger$Validated on moving frames only. $^\S$Lowest overall, but its validation split likely over-represents the logo cells. Two further runs were cancelled before completion, and a run on trimmed takes was planned but not trained. All 24 checkpoints probed with the prompt test aimed in column and row order.}
+\end{table*}
 
 \section{Limitations}
 
@@ -160,5 +190,12 @@ We thank Actor Labs and Physical Intelligence for organizing the Act-athon and p
 \bibitem{aloha} T.~Z.~Zhao, V.~Kumar, S.~Levine, and C.~Finn, ``Learning fine-grained bimanual manipulation with low-cost hardware,'' in \emph{RSS}, 2023.
 \bibitem{lerobot} R.~Cadene \emph{et al.}, ``LeRobot: State-of-the-art machine learning for real-world robotics in PyTorch,'' \url{https://github.com/huggingface/lerobot}, 2024.
 \end{thebibliography}
+
+\normalsize
+\appendix
+\section*{Appendix: All Fine-Tuning Runs}
+
+Table~\ref{tab:allruns} lists every fine-tuning run. Validation error is computed by the fine-tuning service on its own held-out split, at the checkpoint shown. Scores marked $\dagger$ or $\ddagger$ use a different validation set and should not be compared with the rest.
+
 
 \end{document}
