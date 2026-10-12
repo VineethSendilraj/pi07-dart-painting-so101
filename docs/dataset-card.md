@@ -2,7 +2,7 @@
 
 - **Code, hardware and wiring:** https://github.com/VineethSendilraj/pi07-dart-painting-so101
 - **Demo video and write-up:** https://x.com/agno_three/status/2105353980377546994
-- **Short paper (PDF):** https://github.com/VineethSendilraj/pi07-dart-painting-so101/blob/main/docs/report/report.pdf
+- **One-page write-up (PDF):** https://github.com/VineethSendilraj/pi07-dart-painting-so101/blob/main/docs/report/report.pdf
 - **Authors:** Vineeth Sendilraj ([@VineethSendil](https://x.com/VineethSendil)), Vardhan Agnihotri ([@agno_three](https://x.com/agno_three)), Yuvraj Lakhotia ([@yuvrajlakh](https://x.com/yuvrajlakh))
 
 ### Contents
